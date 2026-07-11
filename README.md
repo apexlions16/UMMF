@@ -12,7 +12,7 @@ UMMF tek bir Unity veya BepInEx sürümüne bağlı değildir. Ortak çekirdek; 
 
 ## Güncel durum
 
-Güncel önizleme sürümü: `0.3.0-onizleme.1`
+Güncel önizleme sürümü: `0.3.0-onizleme.2`
 
 Bu sürüm çalışma zamanı host altyapısının ilk işlevsel parçasını içerir:
 
@@ -36,22 +36,25 @@ UMMF özgün oyun dosyalarını yerinde değiştirmez. Çalışma zamanı uyarla
 
 ## İndirme
 
-Deneme paketleri GitHub sayfasındaki **Sürümler** bölümünde tam GitHub Release olarak yayımlanır. Windows x64 paketi kendi .NET çalışma zamanını içerir.
+Deneme sürümleri GitHub sayfasındaki **Sürümler** bölümünde tam GitHub Release olarak yayımlanır.
 
-İndirilecek paket:
+Doğrudan indirilecek çalıştırılabilir dosya:
 
-`UMMF-v0.3.0-onizleme.1-windows-x64.zip`
+`UMMF-v0.3.0-onizleme.2-windows-x64.exe`
 
-## Komut satırı kullanımı
+Bu dosya tek başına çalışır ve ayrıca .NET kurulumu gerektirmez. ZIP açma veya kaynak kodu derleme işlemi gerekmez.
+
+## Kullanım
+
+İndirdiğin EXE'nin bulunduğu klasörde PowerShell aç:
 
 ```powershell
-./ummf.exe bilgi
-./ummf.exe oyun-tara "D:\Oyunlar\OrnekOyun"
-./ummf.exe host-demo
-./ummf.exe dogrula ./ornekler/OrnekMedyaModu/mod.json
-./ummf.exe kimlik-demo
-./ummf.exe eslestirme-demo
-./ummf.exe yardim
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe bilgi
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe host-demo
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe kimlik-demo
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe eslestirme-demo
+./UMMF-v0.3.0-onizleme.2-windows-x64.exe yardim
 ```
 
 ### `oyun-tara <oyun-dizini>`
@@ -80,10 +83,6 @@ Dört hedef ortam için host seçimini gösterir:
 
 Sürümü ve önizlemenin kapsamını gösterir.
 
-### `dogrula <mod.json>`
-
-Türkçe UMMF mod bildirimini okur ve doğrular.
-
 ### `kimlik-demo`
 
 Bir altyazı için güncellemeler arasında korunabilecek kararlı kimlik üretir.
@@ -92,15 +91,17 @@ Bir altyazı için güncellemeler arasında korunabilecek kararlı kimlik üreti
 
 İçerik özeti değişmiş bir dokunun bağlamsal bilgilerle yeniden eşleştirilmesini gösterir.
 
-## Kaynaktan derleme
+## Release doğrulaması
 
-```bash
-dotnet restore UMMF.sln
-dotnet build UMMF.sln --configuration Release
-dotnet test UMMF.sln --configuration Release
-```
+Release iş akışı Windows üzerinde çalışır ve şu denetimleri tamamlamadan sürüm yayımlamaz:
 
-Geliştirme için .NET 8 SDK veya daha yeni bir sürüm önerilir. Unity ile paylaşılacak ortak kitaplıklar, eski Unity Mono ortamlarıyla uyumluluk için `netstandard2.0` hedefler.
+1. Çözümü derler.
+2. Bütün birim testlerini çalıştırır.
+3. Tek dosyalı ve kendi .NET çalışma zamanını içeren Windows x64 EXE üretir.
+4. Üretilen EXE'yi Windows runner üzerinde gerçekten açar.
+5. `bilgi` komutunun doğru sürüm çıktısını verdiğini doğrular.
+6. EXE'yi doğrudan GitHub Release varlığı olarak yükler.
+7. SHA-256 özetini yayımlar.
 
 ## Yol haritası
 
@@ -124,7 +125,7 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 - [Uyumluluk hedefleri](belgeler/uyumluluk-hedefleri.md)
 - [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
 - [Değişiklik günlüğü](DEGISIKLIKLER.md)
-- [0.3.0 Önizleme 1 sürüm notları](belgeler/surum-notlari/0.3.0-onizleme.1.md)
+- [0.3.0 Önizleme 2 sürüm notları](belgeler/surum-notlari/0.3.0-onizleme.2.md)
 
 ## Lisans
 
