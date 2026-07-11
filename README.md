@@ -12,6 +12,8 @@ Projenin odaklandığı üç medya alanı:
 
 ## Güncel durum
 
+Güncel önizleme sürümü: `0.2.0-onizleme.2`
+
 Bu sürüm çalışma zamanından bağımsız temeli ve Türkçe komut satırı önizlemesini içerir:
 
 - sürümlenmiş Türkçe mod bildirimi modeli
@@ -19,6 +21,8 @@ Bu sürüm çalışma zamanından bağımsız temeli ve Türkçe komut satırı 
 - oyun güncellemelerinden sonra güven puanlı yeniden eşleştirme
 - mod bildirimi doğrulama
 - Türkçe JSON şeması ve örnek medya modu
+- Türkçe uygulama çıktıları ve hata iletileri
+- Türkçe GitHub iş akışları ve sorun kayıtları
 - otomatik derleme, test ve GitHub sürümü
 
 UMMF özgün oyun dosyalarını yerinde değiştirmez. İleride eklenecek çalışma zamanı uyarlayıcıları, oyun çalışırken varlıkları bulup güvenli biçimde değiştirecektir.
@@ -26,6 +30,10 @@ UMMF özgün oyun dosyalarını yerinde değiştirmez. İleride eklenecek çalı
 ## İndirme
 
 Deneme paketleri GitHub sayfasındaki **Sürümler** bölümünde yayımlanır. Windows x64 paketi kendi .NET çalışma zamanını içerir.
+
+İndirilecek paket:
+
+`UMMF-v0.2.0-onizleme.2-windows-x64.zip`
 
 ## Komut satırı kullanımı
 
@@ -81,7 +89,8 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 
 - [Mimari](belgeler/mimari.md)
 - [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
-- [Sürüm notları](belgeler/surum-notlari/0.2.0-onizleme.1.md)
+- [Değişiklik günlüğü](DEGISIKLIKLER.md)
+- [0.2.0 Önizleme 2 sürüm notları](belgeler/surum-notlari/0.2.0-onizleme.2.md)
 
 ## Lisans
 
