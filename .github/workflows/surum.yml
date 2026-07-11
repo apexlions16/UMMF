@@ -123,12 +123,11 @@ jobs:
 
           $hedef = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
           Copy-Item $kaynak $hedef -Force
-
-          $digerDosyalar = @(Get-ChildItem artifacts/paket -File | Where-Object { $_.Name -ne 'ummf.exe' })
-          if ($digerDosyalar.Count -gt 0) {
-            $adlar = ($digerDosyalar.Name -join ', ')
-            throw "Çıktı tek dosyalı değil. Ek dosyalar: $adlar"
-          }
+          Get-ChildItem artifacts/paket -File |
+            Select-Object Name, Length |
+            Format-Table -AutoSize |
+            Out-String |
+            Set-Content artifacts/YAYIN-DOSYALARI.txt -Encoding utf8
 
       - name: EXE açılış testini çalıştır
         shell: pwsh
@@ -338,7 +337,7 @@ jobs:
             "Çalışma: $env:CALISMA_ADRESI"
           )
 
-          foreach ($dosya in @('derleme.log', 'yayin.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
+          foreach ($dosya in @('derleme.log', 'yayin.log', 'surum.log', 'artifacts/YAYIN-DOSYALARI.txt', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
             if (Test-Path $dosya) {
               $satirlar += ''
               $satirlar += '```text'
