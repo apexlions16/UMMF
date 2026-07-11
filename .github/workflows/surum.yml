@@ -46,14 +46,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
+          DEPO: ${{ github.repository }}
         shell: pwsh
         run: |
-          gh release view $env:ETIKET *> $null
-          if ($LASTEXITCODE -eq 0) {
+          $adres = "https://api.github.com/repos/$env:DEPO/releases/tags/$env:ETIKET"
+          $basliklar = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $yanit = Invoke-WebRequest -Uri $adres -Headers $basliklar -SkipHttpErrorCheck
+          if ($yanit.StatusCode -eq 200) {
             "var=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           }
-          else {
+          elseif ($yanit.StatusCode -eq 404) {
             "var=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+          else {
+            throw "GitHub Release denetimi başarısız oldu. HTTP durumu: $($yanit.StatusCode)"
           }
 
       - name: Bağımlılıkları geri yükle
@@ -108,7 +118,7 @@ jobs:
           $hedef = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
           Copy-Item $kaynak $hedef -Force
 
-          $digerDosyalar = Get-ChildItem artifacts/paket -File | Where-Object { $_.Name -ne 'ummf.exe' }
+          $digerDosyalar = @(Get-ChildItem artifacts/paket -File | Where-Object { $_.Name -ne 'ummf.exe' })
           if ($digerDosyalar.Count -gt 0) {
             $adlar = ($digerDosyalar.Name -join ', ')
             throw "Çıktı tek dosyalı değil. Ek dosyalar: $adlar"
@@ -190,7 +200,8 @@ jobs:
           }
 
           $beklenenExe = "UMMF-v$env:SURUM-windows-x64.exe"
-          if ($surumBilgisi.assets.name -notcontains $beklenenExe) {
+          $varlikAdlari = @($surumBilgisi.assets | ForEach-Object { $_.name })
+          if ($varlikAdlari -notcontains $beklenenExe) {
             throw "Release içinde doğrudan EXE bulunamadı: $beklenenExe"
           }
 
@@ -214,7 +225,8 @@ jobs:
           CALISMA_ADRESI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: pwsh
         run: |
-          $baslik = "Sürüm $($env:SURUM ?? 'bilinmiyor') oluşturulamadı (çalışma ${{ github.run_id }})"
+          $surumAdi = if ([string]::IsNullOrWhiteSpace($env:SURUM)) { 'bilinmiyor' } else { $env:SURUM }
+          $baslik = "Sürüm $surumAdi oluşturulamadı (çalışma ${{ github.run_id }})"
           $geciciDosya = "$env:RUNNER_TEMP/sorun.md"
           $satirlar = @(
             'Otomatik Windows EXE sürüm iş akışı başarısız oldu.',
