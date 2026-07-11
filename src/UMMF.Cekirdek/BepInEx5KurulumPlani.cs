@@ -55,12 +55,13 @@ public static class BepInEx5KurulumPlanlayici
             return UygunDegil("BepInEx 5 kurulumu bulunamadı. UMMF eklentisi yalnızca doğrulanmış BepInEx 5 Mono ortamına kurulabilir.");
         }
 
-        if (string.IsNullOrWhiteSpace(ortam.Yukleyici.KokDizin))
+        var bepinexKokDizini = ortam.Yukleyici.KokDizin;
+        if (string.IsNullOrWhiteSpace(bepinexKokDizini))
         {
             return UygunDegil("BepInEx kök dizini belirlenemedi.");
         }
 
-        var bepinexKoku = Path.GetFullPath(ortam.Yukleyici.KokDizin);
+        var bepinexKoku = Path.GetFullPath(bepinexKokDizini!);
         var eklentiDizini = Path.Combine(bepinexKoku, "plugins", "UMMF");
         var ummfKoku = Path.Combine(bepinexKoku, "UMMF");
         var modDizini = Path.Combine(ummfKoku, "modlar");
@@ -86,12 +87,13 @@ public static class BepInEx5KurulumPlanlayici
 
     private static bool NetStandardVarMi(OyunOrtami ortam)
     {
-        if (string.IsNullOrWhiteSpace(ortam.VeriDizini))
+        var veriDizini = ortam.VeriDizini;
+        if (string.IsNullOrWhiteSpace(veriDizini))
         {
             return false;
         }
 
-        var managedDizini = Path.Combine(ortam.VeriDizini, "Managed");
+        var managedDizini = Path.Combine(veriDizini!, "Managed");
         return File.Exists(Path.Combine(managedDizini, "netstandard.dll"));
     }
 
