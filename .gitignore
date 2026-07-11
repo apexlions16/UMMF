@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.cache
+TestResults/
+coverage/
+artifacts/
+packages/
+[Bb]epInEx/
+*.zip
+*.nupkg
+.DS_Store
+Thumbs.db

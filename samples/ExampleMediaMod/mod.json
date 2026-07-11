@@ -1,0 +1,41 @@
+{
+  "$schema": "../../schemas/mod-manifest.schema.json",
+  "schemaVersion": 1,
+  "id": "com.example.turkish-media-pack",
+  "name": "Example Turkish Media Pack",
+  "version": "0.1.0",
+  "target": {
+    "gameId": "auto",
+    "productName": null,
+    "minimumFrameworkVersion": "0.1.0"
+  },
+  "replacements": [
+    {
+      "id": "subtitle:intro:line-001",
+      "kind": "Subtitle",
+      "match": {
+        "kind": "Subtitle",
+        "stableKey": "Dialogue/Intro/Line_001",
+        "usagePath": "Canvas/Dialogue/SubtitleText",
+        "sourceText": "We need to leave now."
+      },
+      "subtitleText": "Hemen gitmemiz gerekiyor.",
+      "voice": "voices/intro_line_001.ogg",
+      "stopVoiceWhenHidden": true,
+      "delayMilliseconds": 0,
+      "volume": 1.0
+    },
+    {
+      "id": "texture:main-menu-logo",
+      "kind": "Texture",
+      "match": {
+        "kind": "Texture",
+        "name": "MainMenuLogo",
+        "usagePath": "Canvas/MainMenu/Header/Logo",
+        "width": 2048,
+        "height": 1024
+      },
+      "replacement": "textures/main_menu_logo_tr.png"
+    }
+  ]
+}
