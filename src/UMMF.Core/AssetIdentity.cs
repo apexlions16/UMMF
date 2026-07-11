@@ -55,7 +55,8 @@ public static class AssetIdentity
             return string.Empty;
         }
 
-        return Regex.Replace(value.Trim().ToLowerInvariant(), @"\s+", " ");
+        var nonNullValue = value ?? string.Empty;
+        return Regex.Replace(nonNullValue.Trim().ToLowerInvariant(), @"\s+", " ");
     }
 
     private static string GetPrefix(MediaAssetKind kind)
