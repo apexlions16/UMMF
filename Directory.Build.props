@@ -7,7 +7,7 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <RepositoryUrl>https://github.com/apexlions16/UMMF</RepositoryUrl>
-    <Authors>UMMF contributors</Authors>
-    <Copyright>Copyright (c) 2026 UMMF contributors</Copyright>
+    <Authors>UMMF katkıda bulunanları</Authors>
+    <Copyright>Telif Hakkı (c) 2026 UMMF katkıda bulunanları</Copyright>
   </PropertyGroup>
 </Project>

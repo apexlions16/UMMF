@@ -1,50 +1,59 @@
 # UMMF
 
-Universal Media Mod Framework is an update-resilient modding framework for Unity games.
+**UMMF — Evrensel Medya Modlama Çerçevesi**, Unity oyunlarındaki dokuları, sesleri ve altyazıları çalışma zamanında keşfetmek, dışarı aktarmak ve değiştirmek için geliştirilen güncellemelere dayanıklı bir modlama altyapısıdır.
 
-UMMF focuses on three media surfaces:
+Projenin odaklandığı üç medya alanı:
 
-- textures and sprites
-- audio clips and subtitle-triggered voice playback
-- subtitles and localization text
+- dokular ve görsel parçalar
+- ses klipleri ve altyazı tetiklemeli seslendirme
+- altyazılar ve yerelleştirme metinleri
 
-The first runtime target will be Windows x64 Unity Mono games through BepInEx 5. Mono remains the stable starting point while BepInEx 6 and IL2CPP support are developed as separate adapters.
+İlk çalışma zamanı hedefi, BepInEx 5 kullanan Windows x64 Unity Mono oyunlarıdır. IL2CPP, Addressables, FMOD ve Wwise destekleri ayrı uyarlayıcılar olarak planlanmaktadır.
 
-## Current status
+## Güncel durum
 
-The repository currently contains the runtime-independent foundation and a testable preview CLI:
+Bu sürüm çalışma zamanından bağımsız temeli ve Türkçe komut satırı önizlemesini içerir:
 
-- a versioned mod manifest model
-- stable and generated media asset identities
-- confidence-based rematching after game updates
-- manifest validation
-- a JSON Schema and example media mod
-- a Windows x64 preview command-line application
-- automated build, test and release packaging
+- sürümlenmiş Türkçe mod bildirimi modeli
+- kalıcı ve otomatik medya varlığı kimlikleri
+- oyun güncellemelerinden sonra güven puanlı yeniden eşleştirme
+- mod bildirimi doğrulama
+- Türkçe JSON şeması ve örnek medya modu
+- otomatik derleme, test ve GitHub sürümü
 
-No game files are modified in place. The preview CLI does not inject into Unity yet. Runtime adapters will discover and replace assets while the game is running in later previews.
+UMMF özgün oyun dosyalarını yerinde değiştirmez. İleride eklenecek çalışma zamanı uyarlayıcıları, oyun çalışırken varlıkları bulup güvenli biçimde değiştirecektir.
 
-## Download and test
+## İndirme
 
-Download the latest Windows archive from [GitHub Releases](https://github.com/apexlions16/UMMF/releases), extract it, and open PowerShell in the extracted directory.
+Deneme paketleri GitHub sayfasındaki **Sürümler** bölümünde yayımlanır. Windows x64 paketi kendi .NET çalışma zamanını içerir.
+
+## Komut satırı kullanımı
 
 ```powershell
-./ummf.exe info
-./ummf.exe validate ./samples/ExampleMediaMod/mod.json
-./ummf.exe identity-demo
-./ummf.exe match-demo
+./ummf.exe bilgi
+./ummf.exe dogrula ./ornekler/OrnekMedyaModu/mod.json
+./ummf.exe kimlik-demo
+./ummf.exe eslestirme-demo
+./ummf.exe yardim
 ```
 
-Expected results:
+### `bilgi`
 
-- `info` prints the installed preview version.
-- `validate` prints `VALID` for the bundled example manifest.
-- `identity-demo` prints a deterministic subtitle asset ID.
-- `match-demo` reports a compatible candidate after a simulated game asset hash change.
+Sürümü ve önizlemenin kapsamını gösterir.
 
-To test validation failure, edit a copy of `samples/ExampleMediaMod/mod.json`, remove its top-level `id`, and run `validate` against the edited file.
+### `dogrula <mod.json>`
 
-## Build
+Türkçe UMMF mod bildirimini okur ve doğrular.
+
+### `kimlik-demo`
+
+Bir altyazı için güncellemeler arasında korunabilecek kararlı kimlik üretir.
+
+### `eslestirme-demo`
+
+İçerik özeti değişmiş bir dokunun bağlamsal bilgilerle yeniden eşleştirilmesini gösterir.
+
+## Kaynaktan derleme
 
 ```bash
 dotnet restore UMMF.sln
@@ -52,33 +61,28 @@ dotnet build UMMF.sln --configuration Release
 dotnet test UMMF.sln --configuration Release
 ```
 
-.NET 8 SDK or newer is recommended for development. Runtime-facing libraries target `netstandard2.0` for compatibility with older Unity Mono environments.
+Geliştirme için .NET 8 SDK veya daha yeni bir sürüm önerilir. Unity ile paylaşılacak çekirdek kitaplıklar, eski Unity Mono ortamlarıyla uyumluluk için `netstandard2.0` hedefler.
 
-## Releases
+## Yol haritası
 
-The repository root contains a `VERSION` file. Changing it on `main` triggers the release workflow, which:
+1. Mod bildirimi sürüm geçişlerini tamamlamak.
+2. BepInEx 5 Mono eklenti girişini eklemek.
+3. `Texture2D`, `Sprite` ve arayüz dokularını keşfedip değiştirmek.
+4. TextMeshPro ve Unity UI altyazı kaynaklarını yakalamak.
+5. Altyazı kimliklerine ses dosyaları bağlamak.
+6. Oyun yapısı katalogları ve güncelleme geçiş raporları oluşturmak.
+7. IL2CPP, Addressables, FMOD ve Wwise uyarlayıcılarını eklemek.
 
-1. restores, builds and tests the solution
-2. publishes a self-contained Windows x64 preview
-3. packages source and SHA-256 checksums
-4. creates the matching Git tag and GitHub Release
+## Kapsam ve güvenlik
 
-Preview versions contain a suffix such as `-preview.1` and are published as prereleases.
+UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile koruması atlatma, çok oyunculu oyun manipülasyonu ve telif hakkıyla korunan oyun varlıklarını yeniden dağıtma proje kapsamı dışındadır.
 
-## Roadmap
+## Belgeler
 
-1. Complete manifest serialization and migration support.
-2. Add a Unity/BepInEx Mono host.
-3. Discover and replace `Texture2D`, `Sprite` and UI textures.
-4. Capture TextMeshPro and Unity UI subtitle sources.
-5. Attach mod-provided voice clips to subtitle IDs.
-6. Add runtime catalogs and game-update migration reports.
-7. Add IL2CPP, Addressables, FMOD and Wwise adapters.
+- [Mimari](belgeler/mimari.md)
+- [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
+- [Sürüm notları](belgeler/surum-notlari/0.2.0-onizleme.1.md)
 
-## Scope and safety
+## Lisans
 
-UMMF is intended for lawful, offline and single-player modding. Anti-cheat bypasses, multiplayer manipulation and redistribution of copyrighted game assets are outside the project scope.
-
-## License
-
-MIT
+MIT Lisansı — Türkçe çeviri için `LICENSE` dosyasına bakın.

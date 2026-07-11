@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>ummf</AssemblyName>
+    <RootNamespace>UMMF.KomutSatiri</RootNamespace>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UMMF.Cekirdek\UMMF.Cekirdek.csproj" />
+    <ProjectReference Include="..\UMMF.Sozlesmeler\UMMF.Sozlesmeler.csproj" />
+  </ItemGroup>
+</Project>

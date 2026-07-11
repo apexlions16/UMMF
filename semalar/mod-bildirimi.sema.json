@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/apexlions16/UMMF/semalar/mod-bildirimi.sema.json",
+  "title": "UMMF mod bildirimi",
+  "description": "Doku, ses ve altyazı değişikliklerini tanımlayan Türkçe UMMF mod bildirimi.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["semaSurumu", "kimlik", "ad", "surum", "degisiklikler"],
+  "properties": {
+    "semaSurumu": { "const": 1 },
+    "kimlik": { "type": "string", "minLength": 3 },
+    "ad": { "type": "string", "minLength": 1 },
+    "surum": { "type": "string", "minLength": 1 },
+    "hedef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "oyunKimligi": { "type": ["string", "null"] },
+        "urunAdi": { "type": ["string", "null"] },
+        "asgariCerceveSurumu": { "type": ["string", "null"] }
+      }
+    },
+    "degisiklikler": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kimlik", "tur", "eslesme"],
+        "properties": {
+          "kimlik": { "type": "string", "minLength": 1 },
+          "tur": { "enum": ["Doku", "GorselParca", "Ses", "Altyazi"] },
+          "eslesme": { "$ref": "#/$defs/varlikParmakIzi" },
+          "yeniDosya": { "type": ["string", "null"] },
+          "altyaziMetni": { "type": ["string", "null"] },
+          "sesDosyasi": { "type": ["string", "null"] },
+          "gizleninceSesiDurdur": { "type": "boolean", "default": true },
+          "gecikmeMilisaniye": { "type": "integer", "minimum": 0 },
+          "sesDuzeyi": { "type": "number", "minimum": 0, "maximum": 2 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "varlikParmakIzi": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tur": { "enum": ["Bilinmiyor", "Doku", "GorselParca", "Ses", "Altyazi"] },
+        "kaliciAnahtar": { "type": ["string", "null"] },
+        "ad": { "type": ["string", "null"] },
+        "kapsayici": { "type": ["string", "null"] },
+        "kullanimYolu": { "type": ["string", "null"] },
+        "genislik": { "type": ["integer", "null"], "minimum": 1 },
+        "yukseklik": { "type": ["integer", "null"], "minimum": 1 },
+        "sureSaniye": { "type": ["number", "null"], "minimum": 0 },
+        "orneklemeHizi": { "type": ["integer", "null"], "minimum": 1 },
+        "kanalSayisi": { "type": ["integer", "null"], "minimum": 1 },
+        "icerikOzeti": { "type": ["string", "null"] },
+        "anlamsalOzet": { "type": ["string", "null"] },
+        "kaynakMetin": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

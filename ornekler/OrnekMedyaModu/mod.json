@@ -1,0 +1,41 @@
+{
+  "$schema": "../../semalar/mod-bildirimi.sema.json",
+  "semaSurumu": 1,
+  "kimlik": "com.ornek.turkce-medya-paketi",
+  "ad": "Örnek Türkçe Medya Paketi",
+  "surum": "0.2.0",
+  "hedef": {
+    "oyunKimligi": "otomatik",
+    "urunAdi": null,
+    "asgariCerceveSurumu": "0.2.0"
+  },
+  "degisiklikler": [
+    {
+      "kimlik": "altyazi:giris:satir-001",
+      "tur": "Altyazi",
+      "eslesme": {
+        "tur": "Altyazi",
+        "kaliciAnahtar": "Diyalog/Giris/Satir_001",
+        "kullanimYolu": "Tuval/Diyalog/AltyaziMetni",
+        "kaynakMetin": "Hemen gitmemiz gerekiyor."
+      },
+      "altyaziMetni": "Hemen gitmemiz gerekiyor.",
+      "sesDosyasi": "sesler/giris_satir_001.ogg",
+      "gizleninceSesiDurdur": true,
+      "gecikmeMilisaniye": 0,
+      "sesDuzeyi": 1.0
+    },
+    {
+      "kimlik": "doku:ana-menu-logo",
+      "tur": "Doku",
+      "eslesme": {
+        "tur": "Doku",
+        "ad": "AnaMenuLogosu",
+        "kullanimYolu": "Tuval/AnaMenu/Baslik/Logo",
+        "genislik": 2048,
+        "yukseklik": 1024
+      },
+      "yeniDosya": "dokular/ana_menu_logo_tr.png"
+    }
+  ]
+}
