@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.Contracts", "src\UMMF.Contracts\UMMF.Contracts.csproj", "{68A65D04-5EF6-4E8B-AB83-FC8D78199DB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.Core", "src\UMMF.Core\UMMF.Core.csproj", "{0F9A2823-F873-42A9-A4B0-1BB3A57AFA6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.Core.Tests", "tests\UMMF.Core.Tests\UMMF.Core.Tests.csproj", "{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68A65D04-5EF6-4E8B-AB83-FC8D78199DB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68A65D04-5EF6-4E8B-AB83-FC8D78199DB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68A65D04-5EF6-4E8B-AB83-FC8D78199DB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68A65D04-5EF6-4E8B-AB83-FC8D78199DB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F9A2823-F873-42A9-A4B0-1BB3A57AFA6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F9A2823-F873-42A9-A4B0-1BB3A57AFA6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F9A2823-F873-42A9-A4B0-1BB3A57AFA6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F9A2823-F873-42A9-A4B0-1BB3A57AFA6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
