@@ -8,56 +8,73 @@ Projenin odaklandığı üç medya alanı:
 - ses klipleri ve altyazı tetiklemeli seslendirme
 - altyazılar ve yerelleştirme metinleri
 
-UMMF tek bir Unity, BepInEx veya betik arka ucu sürümüne bağlı olmayacaktır. Hedef kapsam; eski Unity Mono oyunlarını, farklı BepInEx nesillerini, güncel Unity Mono oyunlarını ve IL2CPP oyunlarını ortak bir çekirdek üzerinde ayrı çalışma zamanı uyarlayıcılarıyla desteklemektir.
+UMMF tek bir Unity veya BepInEx sürümüne bağlı değildir. Ortak çekirdek; eski ve yeni Unity Mono oyunları, farklı BepInEx nesilleri ve Unity IL2CPP oyunları için ayrı çalışma zamanı hostları üzerinden kullanılacaktır.
 
 ## Güncel durum
 
-Güncel önizleme sürümü: `0.2.0-onizleme.2`
+Güncel önizleme sürümü: `0.3.0-onizleme.1`
 
-Bu sürüm çalışma zamanından bağımsız temeli ve Türkçe komut satırı önizlemesini içerir:
+Bu sürüm çalışma zamanı host altyapısının ilk işlevsel parçasını içerir:
 
+- Unity oyun klasörü algılama
+- Unity sürümünü `globalgamemanagers` ve benzeri dosyalardan okuma
+- Mono ve IL2CPP betik arka ucu ayrımı
+- Windows PE dosyalarından x86, x64, ARM32 ve ARM64 mimari algılama
+- BepInEx kurulumu, sürümü ve nesli algılama
+- TextMeshPro, Unity UI, Addressables, FMOD ve Wwise dosya varlığı algılama
+- ortak `ICalismaZamaniHostu` sözleşmesi
+- host yetenek bayrakları
+- eski BepInEx Mono, BepInEx 5 Mono, BepInEx 6 Mono ve BepInEx 6 IL2CPP host seçimi
+- yükleyicisiz Mono ve IL2CPP oyunlarında güvenli kurulum adayı sonucu
+- Mono ve IL2CPP tarama/host seçim birim testleri
 - sürümlenmiş Türkçe mod bildirimi modeli
-- kalıcı ve otomatik medya varlığı kimlikleri
-- oyun güncellemelerinden sonra güven puanlı yeniden eşleştirme
-- mod bildirimi doğrulama
-- Türkçe JSON şeması ve örnek medya modu
-- Türkçe uygulama çıktıları ve hata iletileri
-- Türkçe GitHub iş akışları ve sorun kayıtları
-- otomatik derleme, test ve GitHub sürümü
+- güncellemelere dayanıklı varlık kimliği ve eşleştirme sistemi
 
-UMMF özgün oyun dosyalarını yerinde değiştirmez. Çalışma zamanı uyarlayıcıları, oyun çalışırken varlıkları bulup güvenli biçimde değiştirecektir.
+Bu sürüm henüz gerçek BepInEx plugin DLL'lerini veya medya değiştirme işlemlerini içermez. Host profilleri doğru oyun ortamını seçer ve sonraki gerçek host projelerinin bağlanacağı ortak sınırı sağlar.
 
-## Hedeflenen çalışma ortamları
-
-Uyumluluk tek bir eklenti DLL'siyle değil, ortak çekirdeği kullanan ayrı host paketleriyle sağlanacaktır:
-
-- eski Unity Mono oyunları için uyumluluk hostu
-- eski BepInEx nesilleriyle çalışabilen Mono uyarlayıcıları
-- BepInEx 5 Unity Mono hostu
-- BepInEx 6 Unity Mono hostu
-- BepInEx 6 IL2CPP hostu ve IL2CPP birlikte çalışma katmanı
-- x86 ve x64 oyunlar için ayrı paketleme
-- ilerleyen aşamalarda Windows dışındaki desteklenebilir masaüstü platformları
-
-Her eski Unity veya BepInEx sürümünün aynı özellikleri desteklemesi garanti edilemez. UMMF oyun açılışında yetenek algılama yapacak; desteklenmeyen özelliği yanlış biçimde uygulamak yerine kapatıp raporlayacaktır.
+UMMF özgün oyun dosyalarını yerinde değiştirmez. Çalışma zamanı uyarlayıcıları oyun çalışırken varlıkları bulup güvenli biçimde değiştirecektir.
 
 ## İndirme
 
-Deneme paketleri GitHub sayfasındaki **Sürümler** bölümünde yayımlanır. Windows x64 paketi kendi .NET çalışma zamanını içerir.
+Deneme paketleri GitHub sayfasındaki **Sürümler** bölümünde tam GitHub Release olarak yayımlanır. Windows x64 paketi kendi .NET çalışma zamanını içerir.
 
 İndirilecek paket:
 
-`UMMF-v0.2.0-onizleme.2-windows-x64.zip`
+`UMMF-v0.3.0-onizleme.1-windows-x64.zip`
 
 ## Komut satırı kullanımı
 
 ```powershell
 ./ummf.exe bilgi
+./ummf.exe oyun-tara "D:\Oyunlar\OrnekOyun"
+./ummf.exe host-demo
 ./ummf.exe dogrula ./ornekler/OrnekMedyaModu/mod.json
 ./ummf.exe kimlik-demo
 ./ummf.exe eslestirme-demo
 ./ummf.exe yardim
 ```
+
+### `oyun-tara <oyun-dizini>`
+
+Bir oyun klasörünü değişiklik yapmadan inceler ve şunları raporlar:
+
+- Unity sürümü
+- Mono veya IL2CPP
+- işlemci mimarisi
+- işletim sistemi düzeni
+- BepInEx sürümü/nesli
+- TextMeshPro, Unity UI, Addressables, FMOD ve Wwise izleri
+- seçilen çalışma zamanı hostu
+- hostun başlatılabilmesi için eksik ön koşullar
+
+### `host-demo`
+
+Dört hedef ortam için host seçimini gösterir:
+
+1. Eski Unity Mono ve eski BepInEx
+2. Unity Mono ve BepInEx 5
+3. Unity Mono ve BepInEx 6
+4. Unity IL2CPP ve BepInEx 6
 
 ### `bilgi`
 
@@ -83,20 +100,19 @@ dotnet build UMMF.sln --configuration Release
 dotnet test UMMF.sln --configuration Release
 ```
 
-Geliştirme için .NET 8 SDK veya daha yeni bir sürüm önerilir. Unity ile paylaşılacak çekirdek kitaplıklar, eski Unity Mono ortamlarıyla uyumluluk için `netstandard2.0` hedefler. Host projeleri ise hedefledikleri Unity ve BepInEx çalışma zamanına göre ayrı framework ve bağımlılıklarla derlenecektir.
+Geliştirme için .NET 8 SDK veya daha yeni bir sürüm önerilir. Unity ile paylaşılacak ortak kitaplıklar, eski Unity Mono ortamlarıyla uyumluluk için `netstandard2.0` hedefler.
 
 ## Yol haritası
 
-1. Unity sürümü, Mono/IL2CPP arka ucu, işlemci mimarisi ve yükleyici sürümü algılamasını eklemek.
-2. BepInEx ve Unity'den bağımsız çalışma zamanı host sözleşmelerini kurmak.
-3. Eski Unity Mono ve eski BepInEx nesilleri için uyumluluk katmanı oluşturmak.
-4. BepInEx 5 ve BepInEx 6 Mono hostlarını oluşturmak.
-5. BepInEx 6 IL2CPP hostunu ve IL2CPP nesne köprüsünü oluşturmak.
+1. Gerçek BepInEx 5 Mono plugin hostunu ortak host sözleşmesine bağlamak.
+2. Harici UMMF mod klasörü ve çalışma zamanı log sistemini eklemek.
+3. BepInEx 6 Mono hostunu bağlamak.
+4. BepInEx 6 IL2CPP interop hostunu bağlamak.
+5. Eski BepInEx/Unity Mono uyumluluk sarmalayıcılarını eklemek.
 6. `Texture2D`, `Sprite` ve arayüz dokularını keşfedip değiştirmek.
 7. TextMeshPro ve Unity UI altyazı kaynaklarını yakalamak.
 8. Altyazı kimliklerine ses dosyaları bağlamak.
-9. Oyun yapısı katalogları ve güncelleme geçiş raporları oluşturmak.
-10. Addressables, FMOD ve Wwise uyarlayıcılarını eklemek.
+9. Addressables, FMOD ve Wwise uyarlayıcılarını eklemek.
 
 ## Kapsam ve güvenlik
 
@@ -108,7 +124,7 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 - [Uyumluluk hedefleri](belgeler/uyumluluk-hedefleri.md)
 - [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
 - [Değişiklik günlüğü](DEGISIKLIKLER.md)
-- [0.2.0 Önizleme 2 sürüm notları](belgeler/surum-notlari/0.2.0-onizleme.2.md)
+- [0.3.0 Önizleme 1 sürüm notları](belgeler/surum-notlari/0.3.0-onizleme.1.md)
 
 ## Lisans
 
