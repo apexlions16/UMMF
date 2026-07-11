@@ -21,14 +21,18 @@
                       LogicalName="UMMF.Kaynaklar.BepInEx5.Mono.netstandard2.0.dll" />
   </ItemGroup>
 
-  <Target Name="BepInEx5PluginleriniDerle" BeforeTargets="PrepareResources">
+  <Target Name="BepInEx5PluginleriniDerle"
+          BeforeTargets="PrepareResources"
+          Condition="'$(RuntimeIdentifier)' == ''">
     <MSBuild Projects="..\UMMF.BepInEx5.Mono\UMMF.BepInEx5.Mono.csproj"
              Targets="Build"
              Properties="Configuration=$(Configuration);TargetFramework=net35"
+             RemoveProperties="RuntimeIdentifier;RuntimeIdentifiers;SelfContained;PublishSingleFile;PublishTrimmed"
              BuildInParallel="false" />
     <MSBuild Projects="..\UMMF.BepInEx5.Mono\UMMF.BepInEx5.Mono.csproj"
              Targets="Build"
              Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0"
+             RemoveProperties="RuntimeIdentifier;RuntimeIdentifiers;SelfContained;PublishSingleFile;PublishTrimmed"
              BuildInParallel="false" />
   </Target>
 </Project>
