@@ -111,11 +111,7 @@ jobs:
           ETIKET: ${{ steps.surum.outputs.etiket }}
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$ETIKET" -m "UMMF $SURUM"
-          git push origin "$ETIKET"
-
+          set -o pipefail
           NOT_DOSYASI="belgeler/surum-notlari/${SURUM}.md"
           if [[ ! -f "$NOT_DOSYASI" ]]; then
             NOT_DOSYASI="${RUNNER_TEMP}/surum-notlari.md"
@@ -125,14 +121,16 @@ jobs:
           if [[ "$SURUM" == *-* ]]; then
             gh release create "$ETIKET" \
               artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
+              --target "$GITHUB_SHA" \
               --title "UMMF $SURUM" \
               --notes-file "$NOT_DOSYASI" \
-              --prerelease
+              --prerelease 2>&1 | tee surum.log
           else
             gh release create "$ETIKET" \
               artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
+              --target "$GITHUB_SHA" \
               --title "UMMF $SURUM" \
-              --notes-file "$NOT_DOSYASI"
+              --notes-file "$NOT_DOSYASI" 2>&1 | tee surum.log
           fi
 
       - name: Sürüm hatasını bildir
@@ -153,6 +151,12 @@ jobs:
               echo
               echo '```text'
               tail -n 80 derleme.log
+              echo '```'
+            fi
+            if [[ -f surum.log ]]; then
+              echo
+              echo '```text'
+              tail -n 80 surum.log
               echo '```'
             fi
           } > "$GECICI_DOSYA"
