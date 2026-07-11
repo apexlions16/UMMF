@@ -217,6 +217,8 @@ jobs:
             throw "Release, Latest olarak işaretlenmemiş."
           }
 
+          gh issue comment 12 --body "$env:ETIKET kullanıcının Windows testinden geçti; tam GitHub Release olarak yayımlandı, prerelease işareti kaldırıldı ve Latest olarak doğrulandı."
+
           gh issue list `
             --state open `
             --search "Sürüm $env:SURUM oluşturulamadı in:title" `
