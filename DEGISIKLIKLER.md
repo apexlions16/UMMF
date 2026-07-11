@@ -1,5 +1,20 @@
 # Değişiklik Günlüğü
 
+## 0.3.0-onizleme.1
+
+- Ortak `OyunOrtami`, yükleyici bilgisi ve çalışma zamanı host sözleşmeleri eklendi.
+- Unity oyun klasörü ve `*_Data` dizini algılama eklendi.
+- Mono ve IL2CPP betik arka ucu ayrımı eklendi.
+- Unity sürümünü `globalgamemanagers` ve benzeri dosyalardan okuma eklendi.
+- PE başlığından x86, x64, ARM32 ve ARM64 mimari algılama eklendi.
+- BepInEx kurulumu, sürümü ve nesli algılama eklendi.
+- TextMeshPro, Unity UI, Addressables, FMOD ve Wwise dosya izleri algılanır hale getirildi.
+- Eski BepInEx Mono, BepInEx 5 Mono, BepInEx 6 Mono ve BepInEx 6 IL2CPP host profilleri eklendi.
+- Yükleyicisiz Mono ve IL2CPP oyunları için güvenli kurulum adayı sonucu eklendi.
+- `oyun-tara` ve `host-demo` komutları eklendi.
+- Dört host senaryosu ile Mono/IL2CPP klasör tarama birim testleri eklendi.
+- README, mimari ve uyumluluk belgeleri yeni altyapıya göre güncellendi.
+
 ## 0.2.0-onizleme.2
 
 - Türkçeleştirme sonrasındaki bütün GitHub iş akışları son biçimine getirildi.
