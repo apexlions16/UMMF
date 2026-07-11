@@ -133,6 +133,18 @@ jobs:
               --notes-file "$NOT_DOSYASI" 2>&1 | tee surum.log
           fi
 
+      - name: Başarılı yayını doğrula ve eski hata kayıtlarını kapat
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIKET: ${{ steps.surum.outputs.etiket }}
+        shell: bash
+        run: |
+          gh release view "$ETIKET" >/dev/null
+          for SORUN in 8 9 10 11; do
+            gh issue close "$SORUN" --reason completed --comment "Türkçe $ETIKET sürümü başarıyla yayımlandı. Bu kayıt, önceki kuyrukta kalan sürüm denemelerinden oluşmuştu." >/dev/null 2>&1 || true
+          done
+
       - name: Sürüm hatasını bildir
         if: failure()
         env:
