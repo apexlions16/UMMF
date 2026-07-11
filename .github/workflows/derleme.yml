@@ -1,0 +1,34 @@
+name: Derleme ve test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  derleme-ve-test:
+    name: Çözümü derle ve test et
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: .NET ortamını kur
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Bağımlılıkları geri yükle
+        run: dotnet restore UMMF.sln
+
+      - name: Çözümü derle
+        run: dotnet build UMMF.sln --configuration Release --no-restore
+
+      - name: Testleri çalıştır
+        run: dotnet test UMMF.sln --configuration Release --no-build --collect:"XPlat Code Coverage"
