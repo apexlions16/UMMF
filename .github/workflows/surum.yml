@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ummf-surum
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   derle-ve-yayinla:
@@ -138,12 +138,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
+          SURUM: ${{ steps.surum.outputs.deger }}
         shell: bash
         run: |
           gh release view "$ETIKET" >/dev/null
-          for SORUN in 8 9 10 11; do
-            gh issue close "$SORUN" --reason completed --comment "Türkçe $ETIKET sürümü başarıyla yayımlandı. Bu kayıt, önceki kuyrukta kalan sürüm denemelerinden oluşmuştu." >/dev/null 2>&1 || true
-          done
+          gh issue list \
+            --state open \
+            --search "Sürüm $SURUM oluşturulamadı in:title" \
+            --json number \
+            --jq '.[].number' | while read -r SORUN; do
+              [[ -z "$SORUN" ]] && continue
+              gh issue close "$SORUN" \
+                --reason completed \
+                --comment "$ETIKET sürümü başarıyla yayımlandı; önceki hata giderildi." >/dev/null 2>&1 || true
+            done
 
       - name: Sürüm hatasını bildir
         if: failure()
