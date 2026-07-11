@@ -3,11 +3,11 @@ name: release
 on:
   push:
     branches: [main]
-    paths: [VERSION]
   workflow_dispatch:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   build-and-release:
@@ -115,3 +115,14 @@ jobs:
               --title "UMMF $VERSION" \
               --notes-file "$NOTES_FILE"
           fi
+
+      - name: Report release failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION 2>/dev/null || printf unknown)"
+          gh issue create \
+            --title "Release ${VERSION} failed" \
+            --body "The automated release workflow failed. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
