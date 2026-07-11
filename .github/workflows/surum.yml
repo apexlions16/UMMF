@@ -14,10 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  derle-ve-yayinla:
-    name: Windows EXE derle, çalıştır ve yayımla
+  derle-test-et-yayinla:
+    name: Windows EXE, plugin ve kurulum akışını doğrula
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Depoyu al
@@ -66,24 +66,10 @@ jobs:
             throw "GitHub Release denetimi başarısız oldu. HTTP durumu: $($yanit.StatusCode)"
           }
 
-      - name: Mevcut sürümü Latest Release olarak işaretle
-        if: steps.mevcut.outputs.var == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          ETIKET: ${{ steps.surum.outputs.etiket }}
-        shell: pwsh
-        run: |
-          gh release edit $env:ETIKET --prerelease=false --latest
-          if ($LASTEXITCODE -ne 0) {
-            throw "Mevcut GitHub Release, Latest olarak işaretlenemedi."
-          }
-
       - name: Bağımlılıkları geri yükle
-        if: steps.mevcut.outputs.var != 'true'
         run: dotnet restore UMMF.sln
 
-      - name: Çözümü derle
-        if: steps.mevcut.outputs.var != 'true'
+      - name: Çözümü ve iki plugin hedefini derle
         shell: pwsh
         run: |
           dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | Tee-Object -FilePath derleme.log
@@ -91,8 +77,16 @@ jobs:
             throw "Çözüm derlenemedi."
           }
 
-      - name: Testleri çalıştır
-        if: steps.mevcut.outputs.var != 'true'
+          $net35 = "src/UMMF.BepInEx5.Mono/bin/Release/net35/UMMF.BepInEx5.Mono.dll"
+          $netstandard = "src/UMMF.BepInEx5.Mono/bin/Release/netstandard2.0/UMMF.BepInEx5.Mono.dll"
+          if (-not (Test-Path $net35)) {
+            throw "net35 BepInEx 5 plugin çıktısı bulunamadı."
+          }
+          if (-not (Test-Path $netstandard)) {
+            throw "netstandard2.0 BepInEx 5 plugin çıktısı bulunamadı."
+          }
+
+      - name: Birim testlerini çalıştır
         shell: pwsh
         run: |
           dotnet test UMMF.sln --configuration Release --no-build
@@ -101,7 +95,6 @@ jobs:
           }
 
       - name: Tek dosyalı Windows EXE üret
-        if: steps.mevcut.outputs.var != 'true'
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
@@ -111,6 +104,7 @@ jobs:
             --configuration Release `
             --runtime win-x64 `
             --self-contained true `
+            --no-restore `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:EnableCompressionInSingleFile=true `
@@ -137,7 +131,6 @@ jobs:
           }
 
       - name: EXE açılış testini çalıştır
-        if: steps.mevcut.outputs.var != 'true'
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
@@ -156,8 +149,84 @@ jobs:
             throw "EXE doğru sürüm bilgisini üretmedi."
           }
 
+      - name: Gömülü net35 ve netstandard plugin kurulumlarını test et
+        shell: pwsh
+        env:
+          SURUM: ${{ steps.surum.outputs.deger }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
+          $bepinexDll = Get-ChildItem "$env:USERPROFILE/.nuget/packages/bepinex.core" -Recurse -Filter BepInEx.dll |
+            Where-Object { $_.FullName -match 'net35' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+          if ($null -eq $bepinexDll) {
+            throw "NuGet önbelleğinde BepInEx 5 net35 BepInEx.dll bulunamadı."
+          }
+
+          function Yeni-SahteOyun([string]$ad, [bool]$netstandard) {
+            $kok = Join-Path $env:RUNNER_TEMP $ad
+            $managed = Join-Path $kok "OrnekOyun_Data/Managed"
+            $core = Join-Path $kok "BepInEx/core"
+            New-Item -ItemType Directory -Path $managed -Force | Out-Null
+            New-Item -ItemType Directory -Path $core -Force | Out-Null
+            Set-Content (Join-Path $managed "Assembly-CSharp.dll") -Value "UMMF test düzeneği" -Encoding utf8
+            Set-Content (Join-Path $kok "OrnekOyun_Data/globalgamemanagers") -Value "2019.4.40f1" -Encoding ascii
+            Copy-Item $bepinexDll.FullName (Join-Path $core "BepInEx.dll") -Force
+            if ($netstandard) {
+              Set-Content (Join-Path $managed "netstandard.dll") -Value "UMMF test düzeneği" -Encoding utf8
+            }
+            return $kok
+          }
+
+          function Kurulumu-Dogrula([string]$oyun, [string]$beklenenCerceve, [string]$beklenenDll) {
+            $kurCiktisi = & $exe kur $oyun 2>&1
+            $kurCiktisi | Add-Content artifacts/KURULUM-TESTI.txt
+            if ($LASTEXITCODE -ne 0) {
+              throw "Kurulum komutu başarısız oldu: $oyun"
+            }
+            if (($kurCiktisi -join "`n") -notmatch [regex]::Escape($beklenenCerceve)) {
+              throw "Beklenen hedef çerçeve seçilmedi: $beklenenCerceve"
+            }
+
+            $kuruluDll = Join-Path $oyun "BepInEx/plugins/UMMF/UMMF.BepInEx5.Mono.dll"
+            if (-not (Test-Path $kuruluDll)) {
+              throw "Plugin DLL'si kurulmadı: $kuruluDll"
+            }
+            if ((Get-FileHash $kuruluDll -Algorithm SHA256).Hash -ne (Get-FileHash $beklenenDll -Algorithm SHA256).Hash) {
+              throw "EXE içinden çıkarılan plugin beklenen derleme ile aynı değil."
+            }
+
+            & $exe durum $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
+            if ($LASTEXITCODE -ne 0) {
+              throw "Durum komutu başarısız oldu."
+            }
+            & $exe rapor $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
+            if ($LASTEXITCODE -ne 0) {
+              throw "Rapor komutu başarısız oldu."
+            }
+            if (-not (Test-Path (Join-Path $oyun "BepInEx/UMMF/raporlar/kurulum-teshis-raporu.json"))) {
+              throw "Kurulum teşhis raporu üretilmedi."
+            }
+
+            & $exe kaldir $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
+            if ($LASTEXITCODE -ne 0) {
+              throw "Kaldırma komutu başarısız oldu."
+            }
+            if (Test-Path $kuruluDll) {
+              throw "Plugin DLL'si kaldırılamadı."
+            }
+            if (-not (Test-Path (Join-Path $oyun "BepInEx/UMMF/modlar"))) {
+              throw "Kaldırma kullanıcı mod klasörünü silmemeliydi."
+            }
+          }
+
+          $eskiOyun = Yeni-SahteOyun "UMMF-Eski-Mono" $false
+          $modernOyun = Yeni-SahteOyun "UMMF-Modern-Mono" $true
+          Kurulumu-Dogrula $eskiOyun "net35" "src/UMMF.BepInEx5.Mono/bin/Release/net35/UMMF.BepInEx5.Mono.dll"
+          Kurulumu-Dogrula $modernOyun "netstandard2.0" "src/UMMF.BepInEx5.Mono/bin/Release/netstandard2.0/UMMF.BepInEx5.Mono.dll"
+
       - name: SHA-256 özeti oluştur
-        if: steps.mevcut.outputs.var != 'true'
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
@@ -166,7 +235,7 @@ jobs:
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash *$(Split-Path $exe -Leaf)" | Set-Content artifacts/SHA256-OZETLERI.txt -Encoding utf8
 
-      - name: Tam GitHub Release oluştur
+      - name: Yeni tam GitHub Release oluştur
         if: steps.mevcut.outputs.var != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -190,6 +259,18 @@ jobs:
             --latest 2>&1 | Tee-Object -FilePath surum.log
           if ($LASTEXITCODE -ne 0) {
             throw "GitHub Release oluşturulamadı."
+          }
+
+      - name: Mevcut sürümü Latest Release olarak işaretle
+        if: steps.mevcut.outputs.var == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIKET: ${{ steps.surum.outputs.etiket }}
+        shell: pwsh
+        run: |
+          gh release edit $env:ETIKET --prerelease=false --latest
+          if ($LASTEXITCODE -ne 0) {
+            throw "Mevcut GitHub Release, Latest olarak işaretlenemedi."
           }
 
       - name: Release ve doğrudan EXE varlığını doğrula
@@ -217,7 +298,7 @@ jobs:
             throw "Release, Latest olarak işaretlenmemiş."
           }
 
-          gh issue comment 12 --body "$env:ETIKET kullanıcının Windows testinden geçti; tam GitHub Release olarak yayımlandı, prerelease işareti kaldırıldı ve Latest olarak doğrulandı."
+          gh issue comment 14 --body "$env:ETIKET; Windows EXE açılış testi, net35/netstandard2.0 gömülü plugin kurulumu, durum, rapor ve kaldırma testlerinden geçti. Normal Latest Release olarak doğrulandı."
 
           gh issue list `
             --state open `
@@ -243,16 +324,16 @@ jobs:
           $baslik = "Sürüm $surumAdi oluşturulamadı (çalışma ${{ github.run_id }})"
           $geciciDosya = "$env:RUNNER_TEMP/sorun.md"
           $satirlar = @(
-            'Otomatik Windows EXE sürüm iş akışı başarısız oldu.',
+            'Otomatik Windows EXE ve BepInEx plugin iş akışı başarısız oldu.',
             '',
             "Çalışma: $env:CALISMA_ADRESI"
           )
 
-          foreach ($dosya in @('derleme.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt')) {
+          foreach ($dosya in @('derleme.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
             if (Test-Path $dosya) {
               $satirlar += ''
               $satirlar += '```text'
-              $satirlar += Get-Content $dosya | Select-Object -Last 80
+              $satirlar += Get-Content $dosya | Select-Object -Last 100
               $satirlar += '```'
             }
           }
