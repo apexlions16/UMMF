@@ -20,7 +20,7 @@ internal sealed class BepInEx5KurulumYoneticisi
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
-                return KurulumIslemSonucu.Basarisiz(plan.Aciklama);
+                return KurulumIslemSonucu.BasarisizlikOlustur(plan.Aciklama);
             }
 
             Directory.CreateDirectory(plan.EklentiDizini);
@@ -34,7 +34,7 @@ internal sealed class BepInEx5KurulumYoneticisi
             EklentiyiCikar(kaynakAdi, plan.EklentiDosyasi);
             KurulumBilgisiniYaz(plan, ortam);
 
-            return KurulumIslemSonucu.Basarili(
+            return KurulumIslemSonucu.BasariOlustur(
                 "UMMF BepInEx 5 Mono eklentisi başarıyla kuruldu.",
                 plan,
                 DosyaOzetiniHesapla(plan.EklentiDosyasi));
@@ -45,7 +45,7 @@ internal sealed class BepInEx5KurulumYoneticisi
                                      hata is DirectoryNotFoundException ||
                                      hata is InvalidOperationException)
         {
-            return KurulumIslemSonucu.Basarisiz("Kurulum tamamlanamadı: " + hata.Message);
+            return KurulumIslemSonucu.BasarisizlikOlustur("Kurulum tamamlanamadı: " + hata.Message);
         }
     }
 
@@ -57,15 +57,15 @@ internal sealed class BepInEx5KurulumYoneticisi
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
-                return KurulumIslemSonucu.Basarisiz(plan.Aciklama);
+                return KurulumIslemSonucu.BasarisizlikOlustur(plan.Aciklama);
             }
 
             if (!File.Exists(plan.EklentiDosyasi))
             {
-                return KurulumIslemSonucu.Basarisiz("UMMF eklentisi kurulu değil.", plan);
+                return KurulumIslemSonucu.BasarisizlikOlustur("UMMF eklentisi kurulu değil.", plan);
             }
 
-            return KurulumIslemSonucu.Basarili(
+            return KurulumIslemSonucu.BasariOlustur(
                 "UMMF eklentisi kurulu ve dosya erişilebilir.",
                 plan,
                 DosyaOzetiniHesapla(plan.EklentiDosyasi));
@@ -75,7 +75,7 @@ internal sealed class BepInEx5KurulumYoneticisi
                                      hata is ArgumentException ||
                                      hata is DirectoryNotFoundException)
         {
-            return KurulumIslemSonucu.Basarisiz("Durum denetlenemedi: " + hata.Message);
+            return KurulumIslemSonucu.BasarisizlikOlustur("Durum denetlenemedi: " + hata.Message);
         }
     }
 
@@ -87,7 +87,7 @@ internal sealed class BepInEx5KurulumYoneticisi
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
-                return KurulumIslemSonucu.Basarisiz(plan.Aciklama);
+                return KurulumIslemSonucu.BasarisizlikOlustur(plan.Aciklama);
             }
 
             Directory.CreateDirectory(plan.RaporDizini);
@@ -118,14 +118,14 @@ internal sealed class BepInEx5KurulumYoneticisi
                 JsonSerializer.Serialize(rapor, new JsonSerializerOptions { WriteIndented = true }),
                 new UTF8Encoding(false));
 
-            return KurulumIslemSonucu.Basarili("Teşhis raporu oluşturuldu: " + raporYolu, plan);
+            return KurulumIslemSonucu.BasariOlustur("Teşhis raporu oluşturuldu: " + raporYolu, plan);
         }
         catch (Exception hata) when (hata is IOException ||
                                      hata is UnauthorizedAccessException ||
                                      hata is ArgumentException ||
                                      hata is DirectoryNotFoundException)
         {
-            return KurulumIslemSonucu.Basarisiz("Rapor oluşturulamadı: " + hata.Message);
+            return KurulumIslemSonucu.BasarisizlikOlustur("Rapor oluşturulamadı: " + hata.Message);
         }
     }
 
@@ -137,7 +137,7 @@ internal sealed class BepInEx5KurulumYoneticisi
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
-                return KurulumIslemSonucu.Basarisiz(plan.Aciklama);
+                return KurulumIslemSonucu.BasarisizlikOlustur(plan.Aciklama);
             }
 
             if (File.Exists(plan.EklentiDosyasi))
@@ -153,7 +153,7 @@ internal sealed class BepInEx5KurulumYoneticisi
 
             DizinBossaSil(plan.EklentiDizini);
 
-            return KurulumIslemSonucu.Basarili(
+            return KurulumIslemSonucu.BasariOlustur(
                 "UMMF plugin DLL'si kaldırıldı. Kullanıcı modları ve raporlar korunmuştur.",
                 plan);
         }
@@ -162,7 +162,7 @@ internal sealed class BepInEx5KurulumYoneticisi
                                      hata is ArgumentException ||
                                      hata is DirectoryNotFoundException)
         {
-            return KurulumIslemSonucu.Basarisiz("Kaldırma tamamlanamadı: " + hata.Message);
+            return KurulumIslemSonucu.BasarisizlikOlustur("Kaldırma tamamlanamadı: " + hata.Message);
         }
     }
 
@@ -248,7 +248,7 @@ internal sealed class KurulumIslemSonucu
 
     public string? Sha256 { get; }
 
-    public static KurulumIslemSonucu Basarili(
+    public static KurulumIslemSonucu BasariOlustur(
         string aciklama,
         BepInEx5KurulumPlani plan,
         string? sha256 = null)
@@ -256,7 +256,7 @@ internal sealed class KurulumIslemSonucu
         return new KurulumIslemSonucu(true, aciklama, plan, sha256);
     }
 
-    public static KurulumIslemSonucu Basarisiz(
+    public static KurulumIslemSonucu BasarisizlikOlustur(
         string aciklama,
         BepInEx5KurulumPlani? plan = null)
     {
