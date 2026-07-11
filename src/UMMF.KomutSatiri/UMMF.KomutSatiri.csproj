@@ -10,5 +10,13 @@
   <ItemGroup>
     <ProjectReference Include="..\UMMF.Cekirdek\UMMF.Cekirdek.csproj" />
     <ProjectReference Include="..\UMMF.Sozlesmeler\UMMF.Sozlesmeler.csproj" />
+    <ProjectReference Include="..\UMMF.BepInEx5.Mono\UMMF.BepInEx5.Mono.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\UMMF.BepInEx5.Mono\bin\$(Configuration)\net35\UMMF.BepInEx5.Mono.dll"
+                      LogicalName="UMMF.Kaynaklar.BepInEx5.Mono.net35.dll" />
+    <EmbeddedResource Include="..\UMMF.BepInEx5.Mono\bin\$(Configuration)\netstandard2.0\UMMF.BepInEx5.Mono.dll"
+                      LogicalName="UMMF.Kaynaklar.BepInEx5.Mono.netstandard2.0.dll" />
   </ItemGroup>
 </Project>
