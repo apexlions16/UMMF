@@ -32,17 +32,33 @@ IL2CPP desteği Mono desteğinin bir uzantısı değil, ayrı bir çalışma zam
 
 ## Yükleyici nesilleri
 
-Planlanan host ailesi:
+| Host ailesi | Ortam algılama/seçim | Gerçek plugin hostu | Medya işlemleri |
+|---|---:|---:|---:|
+| Eski Unity Mono kurulum adayı | Hazır | Planlandı | Planlandı |
+| Eski BepInEx Mono hostu | Hazır | Planlandı | Planlandı |
+| BepInEx 5 Mono hostu | Hazır | Sıradaki aşama | Planlandı |
+| BepInEx 6 Mono hostu | Hazır | Planlandı | Planlandı |
+| BepInEx 6 IL2CPP hostu | Hazır | Planlandı | Planlandı |
 
-| Host | Amaç | Durum |
-|---|---|---|
-| Eski Unity Mono uyumluluk hostu | Eski Unity/Mono API'leri | Planlandı |
-| Eski BepInEx Mono hostu | Eski BepInEx nesilleri | Planlandı |
-| BepInEx 5 Mono hostu | Yaygın Unity Mono oyunları | Planlandı |
-| BepInEx 6 Mono hostu | Yeni Mono çalışma zamanı | Planlandı |
-| BepInEx 6 IL2CPP hostu | IL2CPP oyunları | Planlandı |
+“Hazır” ifadesi gerçek oyuna enjekte edilen pluginin tamamlandığı anlamına gelmez. `0.3.0-onizleme.1`, oyun ortamını tanır ve hangi host ailesinin kullanılması gerektiğini seçer.
 
-BepInEx bulunmayan veya desteklenmeyen oyunlar için gelecekte farklı bir yükleyici köprüsü değerlendirilebilir; ancak ilk altyapı BepInEx uyarlayıcılarına odaklanacaktır.
+## Algılanan bilgiler
+
+Tarayıcı şu bilgileri üretir:
+
+- Unity veri dizini ve çalıştırılabilir dosya
+- Unity sürümü
+- Mono veya IL2CPP arka ucu
+- x86, x64, ARM32 veya ARM64 mimarisi
+- Windows, Linux veya macOS dosya düzeni
+- BepInEx kurulumu ve mümkünse ana sürümü
+- TextMeshPro
+- Unity UI
+- Addressables
+- FMOD
+- Wwise
+
+Bilinmeyen bilgiler varsayımla doldurulmaz. Uyumluluk raporunda açıkça `Bilinmiyor` olarak kalır.
 
 ## Uyumluluk ilkeleri
 
@@ -53,20 +69,35 @@ BepInEx bulunmayan veya desteklenmeyen oyunlar için gelecekte farklı bir yükl
 5. Belirsiz veya desteklenmeyen değişiklikler güvenli biçimde atlanır.
 6. Her oyun ortamı tarama raporuyla tanımlanır.
 7. Doğrulanmış kombinasyonlar bir uyumluluk matrisinde tutulur.
+8. Yükleyici bulunmayan oyun için yanlış host başlatılmaz; kurulum adayı raporlanır.
+9. IL2CPP ve Mono aynı mod bildirimini kullanır fakat farklı gerçek hostlarda çalışır.
 
-## İlk altyapı teslimatı
+## 0.3.0-onizleme.1 teslimatı
 
-Bir sonraki geliştirme aşaması şu parçaları oluşturacaktır:
+Tamamlanan parçalar:
 
 - `OyunOrtami` veri modeli
 - Unity sürümü algılama
 - Mono/IL2CPP ayrımı
-- x86/x64 mimari algılama
-- BepInEx sürümü algılama
+- x86/x64/ARM mimari algılama
+- BepInEx kurulumu ve sürüm nesli algılama
 - `ICalismaZamaniHostu` sözleşmesi
 - host yetenek bayrakları
-- host kayıt ve seçim sistemi
-- sahte Mono ve IL2CPP hostlarıyla birim testleri
-- uyumluluk raporu modeli
+- host kayıt ve öncelikli seçim sistemi
+- yükleyicisiz Mono ve IL2CPP için güvenli kurulum adayı
+- sahte Mono ve IL2CPP ortamlarıyla birim testleri
+- gerçekçi klasör düzeni kullanan tarama testleri
+- `oyun-tara` ve `host-demo` komutları
 
-Bu altyapı tamamlandıktan sonra gerçek BepInEx 5 Mono ve BepInEx 6 IL2CPP hostları aynı çekirdeğe ayrı ayrı bağlanacaktır.
+## Sonraki teslimat
+
+Bir sonraki altyapı aşaması:
+
+- gerçek BepInEx 5 Mono plugin projesi
+- plugin yaşam döngüsü
+- ortak host sözleşmesine bağlanan log ve başlangıç servisi
+- harici UMMF mod klasörü keşfi
+- oyun yapısı parmak izi ve uyumluluk raporunun JSON çıktısı
+- örnek oyunda plugin yüklenme doğrulaması
+
+Bunun ardından BepInEx 6 Mono ve BepInEx 6 IL2CPP gerçek hostları aynı ortak sözleşmeye bağlanacaktır.
