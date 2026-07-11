@@ -1,4 +1,4 @@
-name: release
+name: Türkçeleştirme geçişini uygula
 
 on:
   push:
@@ -10,133 +10,53 @@ permissions:
   issues: write
 
 jobs:
-  build-and-release:
+  turkcelestirme-gecisi:
+    name: Türkçe proje ağacını main dalına uygula
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout
+      - name: Depoyu al
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Read version
-        id: version
+      - name: Paketi birleştir ve doğrula
         shell: bash
         run: |
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
-            echo "Invalid VERSION value: $VERSION" >&2
-            exit 1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          PARCA_SAYISI="$(find araclar/turkcelestirme -name 'parca-*.txt' | wc -l)"
+          test "$PARCA_SAYISI" -eq 6
+          cat araclar/turkcelestirme/parca-*.txt | base64 --decode > "${RUNNER_TEMP}/ummf-turkce.tar.gz"
+          tar -tzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" > "${RUNNER_TEMP}/dosya-listesi.txt"
+          grep -q './README.md' "${RUNNER_TEMP}/dosya-listesi.txt"
+          grep -q './src/UMMF.KomutSatiri/Program.cs' "${RUNNER_TEMP}/dosya-listesi.txt"
+          grep -q './.github/workflows/surum.yml' "${RUNNER_TEMP}/dosya-listesi.txt"
 
-      - name: Skip an existing release
-        id: existing
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
+      - name: Eski ağacı kaldır ve Türkçe ağacı aç
         shell: bash
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          tar -xzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" -C .
 
-      - name: Restore
-        if: steps.existing.outputs.exists != 'true'
-        run: dotnet restore UMMF.sln
-
-      - name: Build
-        if: steps.existing.outputs.exists != 'true'
+      - name: Değişiklikleri gönder
         shell: bash
         run: |
-          set -o pipefail
-          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | tee build.log
-
-      - name: Test
-        if: steps.existing.outputs.exists != 'true'
-        run: dotnet test UMMF.sln --configuration Release --no-build
-
-      - name: Publish Windows preview
-        if: steps.existing.outputs.exists != 'true'
-        shell: bash
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          mkdir -p artifacts/package/schemas artifacts/package/samples/ExampleMediaMod
-          dotnet publish src/UMMF.Cli/UMMF.Cli.csproj \
-            --configuration Release \
-            --runtime win-x64 \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:DebugType=None \
-            -p:DebugSymbols=false \
-            --output artifacts/package
-          cp README.md VERSION artifacts/package/
-          cp schemas/mod-manifest.schema.json artifacts/package/schemas/
-          cp samples/ExampleMediaMod/mod.json artifacts/package/samples/ExampleMediaMod/
-          (cd artifacts/package && zip -r "../UMMF-v${VERSION}-win-x64.zip" .)
-          git archive --format=zip --output="artifacts/UMMF-v${VERSION}-source.zip" HEAD
-          (cd artifacts && sha256sum *.zip > SHA256SUMS.txt)
-
-      - name: Create tag and GitHub release
-        if: steps.existing.outputs.exists != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-          TAG: ${{ steps.version.outputs.tag }}
-        shell: bash
-        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "UMMF $VERSION"
-          git push origin "$TAG"
+          git add -A
+          git commit -m "Projeyi baştan sona Türkçeleştir"
+          git push origin main
 
-          NOTES_FILE="docs/release-notes/${VERSION}.md"
-          if [[ ! -f "$NOTES_FILE" ]]; then
-            NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
-            printf '# UMMF %s\n\nAutomated preview release.\n' "$VERSION" > "$NOTES_FILE"
-          fi
-
-          if [[ "$VERSION" == *-* ]]; then
-            gh release create "$TAG" \
-              artifacts/*.zip artifacts/SHA256SUMS.txt \
-              --title "UMMF $VERSION" \
-              --notes-file "$NOTES_FILE" \
-              --prerelease
-          else
-            gh release create "$TAG" \
-              artifacts/*.zip artifacts/SHA256SUMS.txt \
-              --title "UMMF $VERSION" \
-              --notes-file "$NOTES_FILE"
-          fi
-
-      - name: Report release failure
+      - name: Başarısız geçişi bildir
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
+          CALISMA_ADRESI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: bash
         run: |
-          VERSION="$(tr -d '[:space:]' < VERSION 2>/dev/null || printf unknown)"
-          LOG_TAIL="$(tail -n 100 build.log 2>/dev/null || true)"
-          BODY_FILE="${RUNNER_TEMP}/release-failure.md"
-          {
-            echo "The automated release workflow failed."
-            echo
-            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-            echo
-            echo '```text'
-            printf '%s\n' "$LOG_TAIL"
-            echo '```'
-          } > "$BODY_FILE"
           gh issue create \
-            --title "Release ${VERSION} failed (run ${GITHUB_RUN_ID})" \
-            --body-file "$BODY_FILE"
+            --title "Türkçeleştirme geçişi başarısız oldu (çalışma ${{ github.run_id }})" \
+            --body "Türkçe proje ağacı uygulanamadı. Çalışma: $CALISMA_ADRESI"
