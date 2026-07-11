@@ -104,14 +104,14 @@ jobs:
             --configuration Release `
             --runtime win-x64 `
             --self-contained true `
-            --no-restore `
+            -p:BuildProjectReferences=false `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:EnableCompressionInSingleFile=true `
             -p:PublishTrimmed=false `
             -p:DebugType=None `
             -p:DebugSymbols=false `
-            --output artifacts/paket
+            --output artifacts/paket 2>&1 | Tee-Object -FilePath yayin.log
           if ($LASTEXITCODE -ne 0) {
             throw "Windows EXE üretilemedi."
           }
@@ -338,7 +338,7 @@ jobs:
             "Çalışma: $env:CALISMA_ADRESI"
           )
 
-          foreach ($dosya in @('derleme.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
+          foreach ($dosya in @('derleme.log', 'yayin.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
             if (Test-Path $dosya) {
               $satirlar += ''
               $satirlar += '```text'
