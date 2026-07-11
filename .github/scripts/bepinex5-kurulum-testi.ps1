@@ -18,6 +18,55 @@ function Gunluge-Yaz([string]$metin) {
     $metin | Add-Content $GunlukYolu -Encoding utf8
 }
 
+function Sahte-BepInEx5DllOlustur {
+    $projeDizini = Join-Path $env:RUNNER_TEMP "UMMF-Sahte-BepInEx5"
+    $ciktiDizini = Join-Path $projeDizini "cikti"
+    if (Test-Path $projeDizini) {
+        Remove-Item $projeDizini -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $projeDizini -Force | Out-Null
+
+    @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>BepInEx</AssemblyName>
+    <RootNamespace>BepInEx</RootNamespace>
+    <Version>5.4.23</Version>
+    <AssemblyVersion>5.4.0.0</AssemblyVersion>
+    <FileVersion>5.4.23.0</FileVersion>
+    <InformationalVersion>5.4.23</InformationalVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
+'@ | Set-Content (Join-Path $projeDizini "BepInEx.csproj") -Encoding utf8
+
+    @'
+namespace BepInEx;
+
+public sealed class UMMFTestIsareti
+{
+    public const string Surum = "5.4.23";
+}
+'@ | Set-Content (Join-Path $projeDizini "UMMFTestIsareti.cs") -Encoding utf8
+
+    $derleme = & dotnet build (Join-Path $projeDizini "BepInEx.csproj") `
+        --configuration Release `
+        --output $ciktiDizini 2>&1
+    $kod = $LASTEXITCODE
+    $derleme | Add-Content $GunlukYolu -Encoding utf8
+    if ($kod -ne 0) {
+        throw "Sahte BepInEx 5 çekirdek DLL'si derlenemedi."
+    }
+
+    $dll = Join-Path $ciktiDizini "BepInEx.dll"
+    if (-not (Test-Path $dll)) {
+        throw "Sahte BepInEx 5 derleme çıktısı bulunamadı: $dll"
+    }
+
+    return Get-Item $dll
+}
+
 function Yeni-SahteOyun([string]$ad, [bool]$netstandard) {
     $kok = Join-Path $env:RUNNER_TEMP $ad
     if (Test-Path $kok) {
@@ -102,22 +151,7 @@ function Kurulumu-Dogrula([string]$oyun, [string]$beklenenCerceve, [string]$bekl
 }
 
 try {
-    $paketKoku = Join-Path $env:USERPROFILE ".nuget/packages/bepinex.core"
-    if (-not (Test-Path $paketKoku)) {
-        throw "BepInEx.Core NuGet paket klasörü bulunamadı: $paketKoku"
-    }
-
-    $script:bepinexDll = Get-ChildItem $paketKoku -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -eq "BepInEx.dll" -or $_.Name -eq "BepInEx.Core.dll" } |
-        Sort-Object FullName -Descending |
-        Select-Object -First 1
-
-    if ($null -eq $script:bepinexDll) {
-        $adaylar = Get-ChildItem $paketKoku -Recurse -File -Filter "BepInEx*.dll" -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty FullName
-        Gunluge-Yaz "Bulunan BepInEx adayları: $($adaylar -join ', ')"
-        throw "NuGet önbelleğinde BepInEx.dll veya BepInEx.Core.dll bulunamadı."
-    }
+    $script:bepinexDll = Sahte-BepInEx5DllOlustur
     Gunluge-Yaz "Test BepInEx çekirdek DLL'si: $($script:bepinexDll.FullName)"
 
     $eskiOyun = Yeni-SahteOyun "UMMF-Eski-Mono" $false
