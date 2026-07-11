@@ -66,6 +66,18 @@ jobs:
             throw "GitHub Release denetimi başarısız oldu. HTTP durumu: $($yanit.StatusCode)"
           }
 
+      - name: Mevcut sürümü Latest Release olarak işaretle
+        if: steps.mevcut.outputs.var == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIKET: ${{ steps.surum.outputs.etiket }}
+        shell: pwsh
+        run: |
+          gh release edit $env:ETIKET --prerelease=false --latest
+          if ($LASTEXITCODE -ne 0) {
+            throw "Mevcut GitHub Release, Latest olarak işaretlenemedi."
+          }
+
       - name: Bağımlılıkları geri yükle
         if: steps.mevcut.outputs.var != 'true'
         run: dotnet restore UMMF.sln
@@ -165,23 +177,17 @@ jobs:
           $notDosyasi = "belgeler/surum-notlari/$env:SURUM.md"
           if (-not (Test-Path $notDosyasi)) {
             $notDosyasi = "$env:RUNNER_TEMP/surum-notlari.md"
-            "# UMMF $env:SURUM`n`nOtomatik oluşturulan önizleme sürümü." | Set-Content $notDosyasi -Encoding utf8
+            "# UMMF $env:SURUM`n`nOtomatik oluşturulan sürüm." | Set-Content $notDosyasi -Encoding utf8
           }
 
           $exe = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
           $ozet = "artifacts/SHA256-OZETLERI.txt"
-          $argumanlar = @(
-            'release', 'create', $env:ETIKET,
-            $exe, $ozet,
-            '--target', $env:GITHUB_SHA,
-            '--title', "UMMF $env:SURUM",
-            '--notes-file', $notDosyasi
-          )
-          if ($env:SURUM -like '*-*') {
-            $argumanlar += '--prerelease'
-          }
-
-          & gh @argumanlar 2>&1 | Tee-Object -FilePath surum.log
+          & gh release create $env:ETIKET `
+            $exe $ozet `
+            --target $env:GITHUB_SHA `
+            --title "UMMF $env:SURUM" `
+            --notes-file $notDosyasi `
+            --latest 2>&1 | Tee-Object -FilePath surum.log
           if ($LASTEXITCODE -ne 0) {
             throw "GitHub Release oluşturulamadı."
           }
@@ -194,7 +200,7 @@ jobs:
           SURUM: ${{ steps.surum.outputs.deger }}
         shell: pwsh
         run: |
-          $surumBilgisi = gh release view $env:ETIKET --json assets | ConvertFrom-Json
+          $surumBilgisi = gh release view $env:ETIKET --json assets,isLatest,isPrerelease | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) {
             throw "GitHub Release doğrulanamadı."
           }
@@ -203,6 +209,12 @@ jobs:
           $varlikAdlari = @($surumBilgisi.assets | ForEach-Object { $_.name })
           if ($varlikAdlari -notcontains $beklenenExe) {
             throw "Release içinde doğrudan EXE bulunamadı: $beklenenExe"
+          }
+          if ($surumBilgisi.isPrerelease) {
+            throw "Release yanlışlıkla ön sürüm olarak işaretlenmiş."
+          }
+          if (-not $surumBilgisi.isLatest) {
+            throw "Release, Latest olarak işaretlenmemiş."
           }
 
           gh issue list `
@@ -213,7 +225,7 @@ jobs:
               if (-not [string]::IsNullOrWhiteSpace($_)) {
                 gh issue close $_ `
                   --reason completed `
-                  --comment "$env:ETIKET tam GitHub Release olarak ve doğrulanmış EXE ile başarıyla yayımlandı." *> $null
+                  --comment "$env:ETIKET tam GitHub Release, Latest ve doğrulanmış EXE ile başarıyla yayımlandı." *> $null
               }
             }
 
