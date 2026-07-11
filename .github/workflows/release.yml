@@ -56,7 +56,10 @@ jobs:
 
       - name: Build
         if: steps.existing.outputs.exists != 'true'
-        run: dotnet build UMMF.sln --configuration Release --no-restore
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | tee build.log
 
       - name: Test
         if: steps.existing.outputs.exists != 'true'
@@ -123,6 +126,17 @@ jobs:
         shell: bash
         run: |
           VERSION="$(tr -d '[:space:]' < VERSION 2>/dev/null || printf unknown)"
+          LOG_TAIL="$(tail -n 100 build.log 2>/dev/null || true)"
+          BODY_FILE="${RUNNER_TEMP}/release-failure.md"
+          {
+            echo "The automated release workflow failed."
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo '```text'
+            printf '%s\n' "$LOG_TAIL"
+            echo '```'
+          } > "$BODY_FILE"
           gh issue create \
-            --title "Release ${VERSION} failed" \
-            --body "The automated release workflow failed. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            --title "Release ${VERSION} failed (run ${GITHUB_RUN_ID})" \
+            --body-file "$BODY_FILE"
