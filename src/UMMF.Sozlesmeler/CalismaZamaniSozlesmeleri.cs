@@ -38,20 +38,23 @@ public enum CalismaZamaniYetenegi
 {
     Yok = 0,
     OrtamTespiti = 1 << 0,
-    ModKesfi = 1 << 1,
-    VarlikKatalogu = 1 << 2,
-    DokuKesfi = 1 << 3,
-    DokuDisariAktarma = 1 << 4,
-    DokuDegistirme = 1 << 5,
-    SesKesfi = 1 << 6,
-    SesDisariAktarma = 1 << 7,
-    SesDegistirme = 1 << 8,
-    AltyaziYakalama = 1 << 9,
-    AltyaziDegistirme = 1 << 10,
-    SeslendirmeOynatma = 1 << 11,
-    Addressables = 1 << 12,
-    Fmod = 1 << 13,
-    Wwise = 1 << 14
+    HostSecimi = 1 << 1,
+    MonoBaglantisi = 1 << 2,
+    Il2CppBaglantisi = 1 << 3,
+    ModKesfi = 1 << 4,
+    VarlikKatalogu = 1 << 5,
+    DokuKesfi = 1 << 6,
+    DokuDisariAktarma = 1 << 7,
+    DokuDegistirme = 1 << 8,
+    SesKesfi = 1 << 9,
+    SesDisariAktarma = 1 << 10,
+    SesDegistirme = 1 << 11,
+    AltyaziYakalama = 1 << 12,
+    AltyaziDegistirme = 1 << 13,
+    SeslendirmeOynatma = 1 << 14,
+    Addressables = 1 << 15,
+    Fmod = 1 << 16,
+    Wwise = 1 << 17
 }
 
 public sealed class YukleyiciBilgisi
@@ -95,7 +98,8 @@ public sealed class OyunOrtami
 
     public bool WwiseVar { get; set; }
 
-    public bool UnityOyunuMu => !string.IsNullOrWhiteSpace(VeriDizini) || BetikArkaUcu != BetikArkaUcu.Bilinmiyor;
+    public bool UnityOyunuMu => !string.IsNullOrWhiteSpace(VeriDizini) ||
+                                this.BetikArkaUcu != UMMF.Sozlesmeler.BetikArkaUcu.Bilinmiyor;
 }
 
 public sealed class HostUyumlulukSonucu
