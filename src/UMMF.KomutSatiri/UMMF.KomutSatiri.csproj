@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AssemblyName>ummf</AssemblyName>
     <RootNamespace>UMMF.KomutSatiri</RootNamespace>
     <PublishTrimmed>false</PublishTrimmed>
