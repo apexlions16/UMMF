@@ -1,5 +1,17 @@
 # Değişiklik Günlüğü
 
+## 0.3.0-onizleme.2
+
+- GitHub Release çıktısı ZIP yerine doğrudan Windows x64 EXE olacak şekilde değiştirildi.
+- Özel kaynak kodu ZIP paketi Release varlıklarından kaldırıldı.
+- EXE kendi .NET çalışma zamanını içeren tek dosyalı uygulama olarak paketlenir hale getirildi.
+- Release derlemesi `windows-latest` üzerinde çalışacak şekilde değiştirildi.
+- Üretilen EXE'nin Windows üzerinde gerçekten açıldığı doğrulanan açılış testi eklendi.
+- `bilgi` komutunun doğru sürümü verdiği doğrulanmadan Release oluşturulmaması sağlandı.
+- Release içinde doğrudan `.exe` varlığı bulunması zorunlu hale getirildi.
+- EXE için SHA-256 doğrulama dosyası oluşturulması korundu.
+- README indirme ve test yönergeleri doğrudan EXE kullanımına göre güncellendi.
+
 ## 0.3.0-onizleme.1
 
 - Ortak `OyunOrtami`, yükleyici bilgisi ve çalışma zamanı host sözleşmeleri eklendi.
