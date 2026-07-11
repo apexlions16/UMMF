@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   turkcelestirme-gecisi:
-    name: Türkçe proje ağacını main dalına uygula
+    name: Türkçe kaynak ağacını main dalına uygula
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -21,33 +21,51 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Geçiş gerekip gerekmediğini denetle
+        id: denetim
+        shell: bash
+        run: |
+          if [[ -d araclar/turkcelestirme ]]; then
+            echo "gerekli=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "gerekli=false" >> "$GITHUB_OUTPUT"
+            echo "Türkçeleştirme kaynak ağacı daha önce uygulandı."
+          fi
+
       - name: Paketi birleştir ve doğrula
+        if: steps.denetim.outputs.gerekli == 'true'
         shell: bash
         run: |
           set -euo pipefail
           PARCA_SAYISI="$(find araclar/turkcelestirme -name 'parca-*.txt' | wc -l)"
           test "$PARCA_SAYISI" -eq 6
           cat araclar/turkcelestirme/parca-*.txt | base64 --decode > "${RUNNER_TEMP}/ummf-turkce.tar.gz"
-          tar -tzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" > "${RUNNER_TEMP}/dosya-listesi.txt"
-          grep -q './README.md' "${RUNNER_TEMP}/dosya-listesi.txt"
-          grep -q './src/UMMF.KomutSatiri/Program.cs' "${RUNNER_TEMP}/dosya-listesi.txt"
-          grep -q './.github/workflows/surum.yml' "${RUNNER_TEMP}/dosya-listesi.txt"
+          mkdir -p "${RUNNER_TEMP}/ummf-yeni"
+          tar -xzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" -C "${RUNNER_TEMP}/ummf-yeni"
+          test -f "${RUNNER_TEMP}/ummf-yeni/README.md"
+          test -f "${RUNNER_TEMP}/ummf-yeni/src/UMMF.KomutSatiri/Program.cs"
+          test -f "${RUNNER_TEMP}/ummf-yeni/.github/workflows/surum.yml"
 
-      - name: Eski ağacı kaldır ve Türkçe ağacı aç
+      - name: Workflow dışındaki eski ağacı Türkçe ağaçla değiştir
+        if: steps.denetim.outputs.gerekli == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          tar -xzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" -C .
+          rm -rf "${RUNNER_TEMP}/ummf-yeni/.github/workflows"
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name .github -exec rm -rf {} +
+          find .github -mindepth 1 -maxdepth 1 ! -name workflows -exec rm -rf {} +
+          cp -a "${RUNNER_TEMP}/ummf-yeni/." .
+          rm -rf araclar
 
-      - name: Değişiklikleri gönder
+      - name: Türkçe kaynak güncellemesini gönder
+        if: steps.denetim.outputs.gerekli == 'true'
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Projeyi baştan sona Türkçeleştir"
+          git commit -m "Kaynak kodu ve belgeleri tamamen Türkçeleştir"
           git push origin main
 
       - name: Başarısız geçişi bildir
@@ -59,4 +77,4 @@ jobs:
         run: |
           gh issue create \
             --title "Türkçeleştirme geçişi başarısız oldu (çalışma ${{ github.run_id }})" \
-            --body "Türkçe proje ağacı uygulanamadı. Çalışma: $CALISMA_ADRESI"
+            --body "Türkçe kaynak ağacı uygulanamadı. Çalışma: $CALISMA_ADRESI"
