@@ -332,7 +332,8 @@ public sealed class OyunOrtamiAlgilayici
             return null;
         }
 
-        var ilkParca = surum.Split('.', '-', '+')[0];
+        var guvenliSurum = surum ?? string.Empty;
+        var ilkParca = guvenliSurum.Split('.', '-', '+')[0];
         return int.TryParse(ilkParca, out var anaSurum) ? anaSurum : null;
     }
 
