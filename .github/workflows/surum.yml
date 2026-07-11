@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   derle-ve-yayinla:
-    name: Windows paketini derle ve yayımla
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    name: Windows EXE derle, çalıştır ve yayımla
+    runs-on: windows-latest
+    timeout-minutes: 25
 
     steps:
       - name: Depoyu al
@@ -32,39 +32,29 @@ jobs:
 
       - name: Sürümü oku
         id: surum
-        shell: bash
+        shell: pwsh
         run: |
-          SURUM="$(tr -d '[:space:]' < VERSION)"
-          if [[ ! "$SURUM" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
-            echo "Geçersiz VERSION değeri: $SURUM" >&2
-            exit 1
-          fi
-          echo "deger=$SURUM" >> "$GITHUB_OUTPUT"
-          echo "etiket=v$SURUM" >> "$GITHUB_OUTPUT"
+          $surum = (Get-Content VERSION -Raw).Trim()
+          if ($surum -notmatch '^\d+\.\d+\.\d+([.-][0-9A-Za-z.-]+)?$') {
+            throw "Geçersiz VERSION değeri: $surum"
+          }
+          "deger=$surum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "etiket=v$surum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Mevcut sürümü denetle
         id: mevcut
         env:
           GH_TOKEN: ${{ github.token }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
-        shell: bash
+        shell: pwsh
         run: |
-          if gh release view "$ETIKET" >/dev/null 2>&1; then
-            echo "var=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "var=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Eski önizleme kaydını Türkçeleştir
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          if gh release view "v0.1.0-preview.1" >/dev/null 2>&1; then
-            gh release edit "v0.1.0-preview.1" \
-              --title "UMMF 0.1.0 Önizleme 1" \
-              --notes-file "belgeler/surum-notlari/0.1.0-preview.1.md"
-          fi
+          gh release view $env:ETIKET *> $null
+          if ($LASTEXITCODE -eq 0) {
+            "var=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+          else {
+            "var=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
 
       - name: Bağımlılıkları geri yükle
         if: steps.mevcut.outputs.var != 'true'
@@ -72,86 +62,149 @@ jobs:
 
       - name: Çözümü derle
         if: steps.mevcut.outputs.var != 'true'
-        shell: bash
+        shell: pwsh
         run: |
-          set -o pipefail
-          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | tee derleme.log
+          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | Tee-Object -FilePath derleme.log
+          if ($LASTEXITCODE -ne 0) {
+            throw "Çözüm derlenemedi."
+          }
 
       - name: Testleri çalıştır
         if: steps.mevcut.outputs.var != 'true'
-        run: dotnet test UMMF.sln --configuration Release --no-build
+        shell: pwsh
+        run: |
+          dotnet test UMMF.sln --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) {
+            throw "Testler başarısız oldu."
+          }
 
-      - name: Windows önizleme paketini hazırla
+      - name: Tek dosyalı Windows EXE üret
         if: steps.mevcut.outputs.var != 'true'
-        shell: bash
+        shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
-          mkdir -p artifacts/paket/semalar artifacts/paket/ornekler/OrnekMedyaModu
-          dotnet publish src/UMMF.KomutSatiri/UMMF.KomutSatiri.csproj \
-            --configuration Release \
-            --runtime win-x64 \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:DebugType=None \
-            -p:DebugSymbols=false \
+          New-Item -ItemType Directory -Path artifacts/paket -Force | Out-Null
+          dotnet publish src/UMMF.KomutSatiri/UMMF.KomutSatiri.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:PublishTrimmed=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
             --output artifacts/paket
-          cp README.md VERSION DEGISIKLIKLER.md artifacts/paket/
-          cp semalar/mod-bildirimi.sema.json artifacts/paket/semalar/
-          cp ornekler/OrnekMedyaModu/mod.json artifacts/paket/ornekler/OrnekMedyaModu/
-          (cd artifacts/paket && zip -r "../UMMF-v${SURUM}-windows-x64.zip" .)
-          git archive --format=zip --output="artifacts/UMMF-v${SURUM}-kaynak-kodu.zip" HEAD
-          (cd artifacts && sha256sum *.zip > SHA256-OZETLERI.txt)
+          if ($LASTEXITCODE -ne 0) {
+            throw "Windows EXE üretilemedi."
+          }
 
-      - name: Etiket ve GitHub sürümü oluştur
+          $kaynak = "artifacts/paket/ummf.exe"
+          if (-not (Test-Path $kaynak)) {
+            throw "Yayın çıktısında ummf.exe bulunamadı."
+          }
+
+          $hedef = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
+          Copy-Item $kaynak $hedef -Force
+
+          $digerDosyalar = Get-ChildItem artifacts/paket -File | Where-Object { $_.Name -ne 'ummf.exe' }
+          if ($digerDosyalar.Count -gt 0) {
+            $adlar = ($digerDosyalar.Name -join ', ')
+            throw "Çıktı tek dosyalı değil. Ek dosyalar: $adlar"
+          }
+
+      - name: EXE açılış testini çalıştır
+        if: steps.mevcut.outputs.var != 'true'
+        shell: pwsh
+        env:
+          SURUM: ${{ steps.surum.outputs.deger }}
+        run: |
+          $exe = Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
+          $cikti = & $exe bilgi 2>&1
+          $cikisKodu = $LASTEXITCODE
+          $cikti | Tee-Object -FilePath artifacts/CALISTIRMA-TESTI.txt
+
+          if ($cikisKodu -ne 0) {
+            throw "EXE açılış testi $cikisKodu çıkış koduyla başarısız oldu."
+          }
+
+          $metin = $cikti -join "`n"
+          if ($metin -notmatch [regex]::Escape($env:SURUM)) {
+            throw "EXE doğru sürüm bilgisini üretmedi."
+          }
+
+      - name: SHA-256 özeti oluştur
+        if: steps.mevcut.outputs.var != 'true'
+        shell: pwsh
+        env:
+          SURUM: ${{ steps.surum.outputs.deger }}
+        run: |
+          $exe = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash *$(Split-Path $exe -Leaf)" | Set-Content artifacts/SHA256-OZETLERI.txt -Encoding utf8
+
+      - name: Tam GitHub Release oluştur
         if: steps.mevcut.outputs.var != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           SURUM: ${{ steps.surum.outputs.deger }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
-        shell: bash
+        shell: pwsh
         run: |
-          set -o pipefail
-          NOT_DOSYASI="belgeler/surum-notlari/${SURUM}.md"
-          if [[ ! -f "$NOT_DOSYASI" ]]; then
-            NOT_DOSYASI="${RUNNER_TEMP}/surum-notlari.md"
-            printf '# UMMF %s\n\nOtomatik oluşturulan önizleme sürümü.\n' "$SURUM" > "$NOT_DOSYASI"
-          fi
+          $notDosyasi = "belgeler/surum-notlari/$env:SURUM.md"
+          if (-not (Test-Path $notDosyasi)) {
+            $notDosyasi = "$env:RUNNER_TEMP/surum-notlari.md"
+            "# UMMF $env:SURUM`n`nOtomatik oluşturulan önizleme sürümü." | Set-Content $notDosyasi -Encoding utf8
+          }
 
-          if [[ "$SURUM" == *-* ]]; then
-            gh release create "$ETIKET" \
-              artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
-              --target "$GITHUB_SHA" \
-              --title "UMMF $SURUM" \
-              --notes-file "$NOT_DOSYASI" \
-              --prerelease 2>&1 | tee surum.log
-          else
-            gh release create "$ETIKET" \
-              artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
-              --target "$GITHUB_SHA" \
-              --title "UMMF $SURUM" \
-              --notes-file "$NOT_DOSYASI" 2>&1 | tee surum.log
-          fi
+          $exe = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
+          $ozet = "artifacts/SHA256-OZETLERI.txt"
+          $argumanlar = @(
+            'release', 'create', $env:ETIKET,
+            $exe, $ozet,
+            '--target', $env:GITHUB_SHA,
+            '--title', "UMMF $env:SURUM",
+            '--notes-file', $notDosyasi
+          )
+          if ($env:SURUM -like '*-*') {
+            $argumanlar += '--prerelease'
+          }
 
-      - name: Başarılı yayını doğrula ve eski hata kayıtlarını kapat
+          & gh @argumanlar 2>&1 | Tee-Object -FilePath surum.log
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Release oluşturulamadı."
+          }
+
+      - name: Release ve doğrudan EXE varlığını doğrula
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
           SURUM: ${{ steps.surum.outputs.deger }}
-        shell: bash
+        shell: pwsh
         run: |
-          gh release view "$ETIKET" >/dev/null
-          gh issue list \
-            --state open \
-            --search "Sürüm $SURUM oluşturulamadı in:title" \
-            --json number \
-            --jq '.[].number' | while read -r SORUN; do
-              [[ -z "$SORUN" ]] && continue
-              gh issue close "$SORUN" \
-                --reason completed \
-                --comment "$ETIKET sürümü başarıyla yayımlandı; önceki hata giderildi." >/dev/null 2>&1 || true
-            done
+          $surumBilgisi = gh release view $env:ETIKET --json assets | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Release doğrulanamadı."
+          }
+
+          $beklenenExe = "UMMF-v$env:SURUM-windows-x64.exe"
+          if ($surumBilgisi.assets.name -notcontains $beklenenExe) {
+            throw "Release içinde doğrudan EXE bulunamadı: $beklenenExe"
+          }
+
+          gh issue list `
+            --state open `
+            --search "Sürüm $env:SURUM oluşturulamadı in:title" `
+            --json number `
+            --jq '.[].number' | ForEach-Object {
+              if (-not [string]::IsNullOrWhiteSpace($_)) {
+                gh issue close $_ `
+                  --reason completed `
+                  --comment "$env:ETIKET tam GitHub Release olarak ve doğrulanmış EXE ile başarıyla yayımlandı." *> $null
+              }
+            }
 
       - name: Sürüm hatasını bildir
         if: failure()
@@ -159,25 +212,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SURUM: ${{ steps.surum.outputs.deger }}
           CALISMA_ADRESI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        shell: bash
+        shell: pwsh
         run: |
-          BASLIK="Sürüm ${SURUM:-bilinmiyor} oluşturulamadı (çalışma ${{ github.run_id }})"
-          GECICI_DOSYA="${RUNNER_TEMP}/sorun.md"
-          {
-            echo "Otomatik sürüm iş akışı başarısız oldu."
-            echo
-            echo "Çalışma: $CALISMA_ADRESI"
-            if [[ -f derleme.log ]]; then
-              echo
-              echo '```text'
-              tail -n 80 derleme.log
-              echo '```'
-            fi
-            if [[ -f surum.log ]]; then
-              echo
-              echo '```text'
-              tail -n 80 surum.log
-              echo '```'
-            fi
-          } > "$GECICI_DOSYA"
-          gh issue create --title "$BASLIK" --body-file "$GECICI_DOSYA"
+          $baslik = "Sürüm $($env:SURUM ?? 'bilinmiyor') oluşturulamadı (çalışma ${{ github.run_id }})"
+          $geciciDosya = "$env:RUNNER_TEMP/sorun.md"
+          $satirlar = @(
+            'Otomatik Windows EXE sürüm iş akışı başarısız oldu.',
+            '',
+            "Çalışma: $env:CALISMA_ADRESI"
+          )
+
+          foreach ($dosya in @('derleme.log', 'surum.log', 'artifacts/CALISTIRMA-TESTI.txt')) {
+            if (Test-Path $dosya) {
+              $satirlar += ''
+              $satirlar += '```text'
+              $satirlar += Get-Content $dosya | Select-Object -Last 80
+              $satirlar += '```'
+            }
+          }
+
+          $satirlar | Set-Content $geciciDosya -Encoding utf8
+          gh issue create --title $baslik --body-file $geciciDosya
