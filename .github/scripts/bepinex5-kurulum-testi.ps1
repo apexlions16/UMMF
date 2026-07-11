@@ -12,20 +12,11 @@ $ErrorActionPreference = 'Stop'
 $exe = (Resolve-Path $ExeYolu).Path
 New-Item -ItemType Directory -Path (Split-Path $GunlukYolu -Parent) -Force | Out-Null
 "UMMF $Surum gömülü plugin kurulum testi başladı." | Set-Content $GunlukYolu -Encoding utf8
+$script:bepinexDll = $null
 
 function Gunluge-Yaz([string]$metin) {
     $metin | Add-Content $GunlukYolu -Encoding utf8
 }
-
-$paketKoku = Join-Path $env:USERPROFILE ".nuget/packages/bepinex.core"
-$bepinexDll = Get-ChildItem $paketKoku -Recurse -Filter BepInEx.dll -ErrorAction SilentlyContinue |
-    Sort-Object FullName -Descending |
-    Select-Object -First 1
-
-if ($null -eq $bepinexDll) {
-    throw "NuGet önbelleğinde BepInEx.Core 5 paketine ait BepInEx.dll bulunamadı."
-}
-Gunluge-Yaz "Test BepInEx DLL'si: $($bepinexDll.FullName)"
 
 function Yeni-SahteOyun([string]$ad, [bool]$netstandard) {
     $kok = Join-Path $env:RUNNER_TEMP $ad
@@ -42,7 +33,7 @@ function Yeni-SahteOyun([string]$ad, [bool]$netstandard) {
     Copy-Item $env:ComSpec (Join-Path $kok "OrnekOyun.exe") -Force
     Set-Content (Join-Path $managed "Assembly-CSharp.dll") -Value "UMMF test düzeneği" -Encoding utf8
     Set-Content (Join-Path $veri "globalgamemanagers") -Value "2019.4.40f1" -Encoding ascii
-    Copy-Item $bepinexDll.FullName (Join-Path $core "BepInEx.dll") -Force
+    Copy-Item $script:bepinexDll.FullName (Join-Path $core "BepInEx.dll") -Force
 
     if ($netstandard) {
         Set-Content (Join-Path $managed "netstandard.dll") -Value "UMMF test düzeneği" -Encoding utf8
@@ -111,6 +102,24 @@ function Kurulumu-Dogrula([string]$oyun, [string]$beklenenCerceve, [string]$bekl
 }
 
 try {
+    $paketKoku = Join-Path $env:USERPROFILE ".nuget/packages/bepinex.core"
+    if (-not (Test-Path $paketKoku)) {
+        throw "BepInEx.Core NuGet paket klasörü bulunamadı: $paketKoku"
+    }
+
+    $script:bepinexDll = Get-ChildItem $paketKoku -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq "BepInEx.dll" -or $_.Name -eq "BepInEx.Core.dll" } |
+        Sort-Object FullName -Descending |
+        Select-Object -First 1
+
+    if ($null -eq $script:bepinexDll) {
+        $adaylar = Get-ChildItem $paketKoku -Recurse -File -Filter "BepInEx*.dll" -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+        Gunluge-Yaz "Bulunan BepInEx adayları: $($adaylar -join ', ')"
+        throw "NuGet önbelleğinde BepInEx.dll veya BepInEx.Core.dll bulunamadı."
+    }
+    Gunluge-Yaz "Test BepInEx çekirdek DLL'si: $($script:bepinexDll.FullName)"
+
     $eskiOyun = Yeni-SahteOyun "UMMF-Eski-Mono" $false
     $modernOyun = Yeni-SahteOyun "UMMF-Modern-Mono" $true
 
