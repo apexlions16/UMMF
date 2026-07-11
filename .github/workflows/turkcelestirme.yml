@@ -1,0 +1,44 @@
+name: Projeyi tamamen Türkçeleştir
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/turkcelestirme.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  turkcelestir:
+    name: Türkçe proje ağacını uygula
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Türkçe proje paketini birleştir
+        shell: bash
+        run: |
+          cat araclar/turkcelestirme/parca-*.txt | base64 --decode > "${RUNNER_TEMP}/ummf-turkce.tar.gz"
+          tar -tzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" >/dev/null
+
+      - name: Eski dosya ağacını Türkçe ağaçla değiştir
+        shell: bash
+        run: |
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          tar -xzf "${RUNNER_TEMP}/ummf-turkce.tar.gz" -C .
+
+      - name: Türkçe güncellemeyi main dalına gönder
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Projeyi baştan sona Türkçeleştir"
+          git push origin main
