@@ -12,107 +12,120 @@ UMMF tek bir Unity veya BepInEx sürümüne bağlı değildir. Ortak çekirdek; 
 
 ## Güncel durum
 
-Güncel önizleme sürümü: `0.3.0-onizleme.2`
+Güncel önizleme sürümü: `0.4.0-onizleme.1`
 
-Bu sürüm çalışma zamanı host altyapısının ilk işlevsel parçasını içerir:
+Bu sürüm ilk gerçek oyun içi hostu içerir:
 
-- Unity oyun klasörü algılama
-- Unity sürümünü `globalgamemanagers` ve benzeri dosyalardan okuma
-- Mono ve IL2CPP betik arka ucu ayrımı
-- Windows PE dosyalarından x86, x64, ARM32 ve ARM64 mimari algılama
-- BepInEx kurulumu, sürümü ve nesli algılama
-- TextMeshPro, Unity UI, Addressables, FMOD ve Wwise dosya varlığı algılama
-- ortak `ICalismaZamaniHostu` sözleşmesi
-- host yetenek bayrakları
-- eski BepInEx Mono, BepInEx 5 Mono, BepInEx 6 Mono ve BepInEx 6 IL2CPP host seçimi
-- yükleyicisiz Mono ve IL2CPP oyunlarında güvenli kurulum adayı sonucu
-- Mono ve IL2CPP tarama/host seçim birim testleri
-- sürümlenmiş Türkçe mod bildirimi modeli
-- güncellemelere dayanıklı varlık kimliği ve eşleştirme sistemi
+- BepInEx 5 Unity Mono için gerçek `BaseUnityPlugin` girişi
+- eski Unity Mono oyunları için `net35` plugin
+- daha yeni Unity Mono oyunları için `netstandard2.0` plugin
+- oyun ortamına göre otomatik plugin seçimi
+- plugin DLL'lerini içinde taşıyan tek dosyalı Windows kurucu EXE
+- `kur`, `durum`, `rapor` ve `kaldir` komutları
+- Türkçe BepInEx başlangıç logları
+- `BepInEx/UMMF/modlar` altında harici mod klasörü
+- kurulum ve oyun içi uyumluluk raporları
+- IL2CPP veya yanlış BepInEx nesline kurulumu durduran güvenlik kontrolleri
+- plugin dosyası için SHA-256 durum doğrulaması
+- eski ve yeni Mono hedef seçimi birim testleri
 
-Bu sürüm henüz gerçek BepInEx plugin DLL'lerini veya medya değiştirme işlemlerini içermez. Host profilleri doğru oyun ortamını seçer ve sonraki gerçek host projelerinin bağlanacağı ortak sınırı sağlar.
+Bu sürümde doku, ses ve altyazı değiştirme henüz etkin değildir. Amaç, gerçek pluginin oyunda güvenli biçimde yüklenmesini ve ortak mod klasörünü hazırlamasını doğrulamaktır.
 
-UMMF özgün oyun dosyalarını yerinde değiştirmez. Çalışma zamanı uyarlayıcıları oyun çalışırken varlıkları bulup güvenli biçimde değiştirecektir.
+UMMF özgün Unity varlık dosyalarını veya oyun çalıştırılabilir dosyasını yerinde değiştirmez.
 
 ## İndirme
 
-Deneme sürümleri GitHub sayfasındaki **Sürümler** bölümünde tam GitHub Release olarak yayımlanır.
+Deneme sürümleri GitHub sayfasındaki **Releases** bölümünde normal **Latest Release** olarak yayımlanır.
 
-Doğrudan indirilecek çalıştırılabilir dosya:
+Doğrudan indirilecek dosya:
 
-`UMMF-v0.3.0-onizleme.2-windows-x64.exe`
+`UMMF-v0.4.0-onizleme.1-windows-x64.exe`
 
-Bu dosya tek başına çalışır ve ayrıca .NET kurulumu gerektirmez. ZIP açma veya kaynak kodu derleme işlemi gerekmez.
+EXE kendi .NET çalışma zamanını içerir. ZIP açma veya kaynak kodu derleme gerekmez. Gerekli BepInEx plugin DLL'leri EXE içine gömülüdür.
 
-## Kullanım
+## Hızlı kullanım
 
 İndirdiğin EXE'nin bulunduğu klasörde PowerShell aç:
 
 ```powershell
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe bilgi
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe host-demo
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe kimlik-demo
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe eslestirme-demo
-./UMMF-v0.3.0-onizleme.2-windows-x64.exe yardim
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe bilgi
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe kur "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe durum "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe rapor "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.4.0-onizleme.1-windows-x64.exe kaldir "D:\Oyunlar\OrnekOyun"
 ```
 
 ### `oyun-tara <oyun-dizini>`
 
-Bir oyun klasörünü değişiklik yapmadan inceler ve şunları raporlar:
+Bir oyun klasörünü değiştirmeden inceler ve Unity sürümü, Mono/IL2CPP, mimari, BepInEx nesli, TextMeshPro, Unity UI, Addressables, FMOD, Wwise ve seçilen hostu raporlar.
 
-- Unity sürümü
-- Mono veya IL2CPP
-- işlemci mimarisi
-- işletim sistemi düzeni
-- BepInEx sürümü/nesli
-- TextMeshPro, Unity UI, Addressables, FMOD ve Wwise izleri
-- seçilen çalışma zamanı hostu
-- hostun başlatılabilmesi için eksik ön koşullar
+### `kur <oyun-dizini>`
 
-### `host-demo`
+Yalnızca doğrulanmış BepInEx 5 Unity Mono ortamına kurulum yapar. Managed klasöründe `netstandard.dll` varsa `netstandard2.0`, aksi durumda eski Unity uyumluluğu için `net35` plugin seçilir.
 
-Dört hedef ortam için host seçimini gösterir:
+Kurulum yapısı:
 
-1. Eski Unity Mono ve eski BepInEx
-2. Unity Mono ve BepInEx 5
-3. Unity Mono ve BepInEx 6
-4. Unity IL2CPP ve BepInEx 6
+```text
+BepInEx/
+├── plugins/
+│   └── UMMF/
+│       └── UMMF.BepInEx5.Mono.dll
+└── UMMF/
+    ├── modlar/
+    ├── raporlar/
+    └── kurulum-bilgisi.json
+```
 
-### `bilgi`
+### `durum <oyun-dizini>`
 
-Sürümü ve önizlemenin kapsamını gösterir.
+Kurulu plugin dosyasını, seçilen hedef çerçeveyi ve SHA-256 özetini gösterir.
 
-### `kimlik-demo`
+### `rapor <oyun-dizini>`
 
-Bir altyazı için güncellemeler arasında korunabilecek kararlı kimlik üretir.
+`BepInEx/UMMF/raporlar/kurulum-teshis-raporu.json` dosyasını üretir.
 
-### `eslestirme-demo`
+### `kaldir <oyun-dizini>`
 
-İçerik özeti değişmiş bir dokunun bağlamsal bilgilerle yeniden eşleştirilmesini gösterir.
+Yalnızca UMMF plugin DLL'sini ve kurulum bilgisini kaldırır. Kullanıcı modları ile raporlar korunur.
+
+## Oyun içi doğrulama
+
+Kurulumdan sonra oyunu bir kez açıp kapat. `BepInEx/LogOutput.log` içinde şu satırların bulunması beklenir:
+
+```text
+UMMF 0.4.0-onizleme.1 başlatılıyor.
+Çalışma zamanı hostu: BepInEx 5 Unity Mono
+UMMF mod klasörü hazır
+UMMF başlangıcı başarıyla tamamlandı.
+```
+
+Plugin ayrıca şu dosyayı üretir:
+
+`BepInEx/UMMF/raporlar/uyumluluk-raporu.json`
 
 ## Release doğrulaması
 
-Release iş akışı Windows üzerinde çalışır ve şu denetimleri tamamlamadan sürüm yayımlamaz:
+Windows yayın iş akışı şu denetimler tamamlanmadan Release oluşturmaz:
 
-1. Çözümü derler.
-2. Bütün birim testlerini çalıştırır.
-3. Tek dosyalı ve kendi .NET çalışma zamanını içeren Windows x64 EXE üretir.
-4. Üretilen EXE'yi Windows runner üzerinde gerçekten açar.
-5. `bilgi` komutunun doğru sürüm çıktısını verdiğini doğrular.
-6. EXE'yi doğrudan GitHub Release varlığı olarak yükler.
-7. SHA-256 özetini yayımlar.
+1. `net35` ve `netstandard2.0` plugin DLL'lerini derler.
+2. Çözümün bütün birim testlerini çalıştırır.
+3. Her iki plugin DLL'sini tek dosyalı Windows x64 EXE içine gömer.
+4. EXE'yi Windows runner üzerinde gerçekten açar.
+5. `bilgi` komutunun doğru sürümü gösterdiğini doğrular.
+6. EXE içindeki gömülü plugin kaynaklarının bulunduğunu denetler.
+7. Doğrudan EXE ve SHA-256 özetini normal Latest Release olarak yayımlar.
 
 ## Yol haritası
 
-1. Gerçek BepInEx 5 Mono plugin hostunu ortak host sözleşmesine bağlamak.
-2. Harici UMMF mod klasörü ve çalışma zamanı log sistemini eklemek.
-3. BepInEx 6 Mono hostunu bağlamak.
-4. BepInEx 6 IL2CPP interop hostunu bağlamak.
-5. Eski BepInEx/Unity Mono uyumluluk sarmalayıcılarını eklemek.
-6. `Texture2D`, `Sprite` ve arayüz dokularını keşfedip değiştirmek.
-7. TextMeshPro ve Unity UI altyazı kaynaklarını yakalamak.
-8. Altyazı kimliklerine ses dosyaları bağlamak.
+1. BepInEx 5 Mono hostunu gerçek oyunlarda doğrulamak.
+2. İlk `Texture2D` kataloğunu ve PNG dışarı aktarmayı eklemek.
+3. PNG ile doku değiştirmeyi eklemek.
+4. TextMeshPro ve Unity UI altyazı yakalamayı eklemek.
+5. Altyazı kimliklerine WAV/OGG ses bağlamak.
+6. BepInEx 6 Mono hostunu bağlamak.
+7. BepInEx 6 IL2CPP interop hostunu bağlamak.
+8. Eski BepInEx/Unity Mono uyumluluk katmanını genişletmek.
 9. Addressables, FMOD ve Wwise uyarlayıcılarını eklemek.
 
 ## Kapsam ve güvenlik
@@ -121,11 +134,12 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 
 ## Belgeler
 
+- [BepInEx 5 Mono kurulum ve test](belgeler/bepinex5-mono-kurulum.md)
 - [Mimari](belgeler/mimari.md)
 - [Uyumluluk hedefleri](belgeler/uyumluluk-hedefleri.md)
 - [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
 - [Değişiklik günlüğü](DEGISIKLIKLER.md)
-- [0.3.0 Önizleme 2 sürüm notları](belgeler/surum-notlari/0.3.0-onizleme.2.md)
+- [0.4.0 Önizleme 1 sürüm notları](belgeler/surum-notlari/0.4.0-onizleme.1.md)
 
 ## Lisans
 
