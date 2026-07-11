@@ -110,9 +110,14 @@ public static class AssetMatcher
 
     private static bool EqualNonEmpty(string? left, string? right)
     {
-        return !string.IsNullOrWhiteSpace(left) &&
-               !string.IsNullOrWhiteSpace(right) &&
-               string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+        {
+            return false;
+        }
+
+        var nonNullLeft = left ?? string.Empty;
+        var nonNullRight = right ?? string.Empty;
+        return string.Equals(nonNullLeft.Trim(), nonNullRight.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static double TextSimilarity(string? left, string? right)
