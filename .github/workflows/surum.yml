@@ -153,77 +153,9 @@ jobs:
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
-          $ErrorActionPreference = 'Stop'
-          $exe = Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
-          $bepinexDll = Get-ChildItem "$env:USERPROFILE/.nuget/packages/bepinex.core" -Recurse -Filter BepInEx.dll |
-            Where-Object { $_.FullName -match 'net35' } |
-            Sort-Object FullName -Descending |
-            Select-Object -First 1
-          if ($null -eq $bepinexDll) {
-            throw "NuGet önbelleğinde BepInEx 5 net35 BepInEx.dll bulunamadı."
-          }
-
-          function Yeni-SahteOyun([string]$ad, [bool]$netstandard) {
-            $kok = Join-Path $env:RUNNER_TEMP $ad
-            $managed = Join-Path $kok "OrnekOyun_Data/Managed"
-            $core = Join-Path $kok "BepInEx/core"
-            New-Item -ItemType Directory -Path $managed -Force | Out-Null
-            New-Item -ItemType Directory -Path $core -Force | Out-Null
-            Set-Content (Join-Path $managed "Assembly-CSharp.dll") -Value "UMMF test düzeneği" -Encoding utf8
-            Set-Content (Join-Path $kok "OrnekOyun_Data/globalgamemanagers") -Value "2019.4.40f1" -Encoding ascii
-            Copy-Item $bepinexDll.FullName (Join-Path $core "BepInEx.dll") -Force
-            if ($netstandard) {
-              Set-Content (Join-Path $managed "netstandard.dll") -Value "UMMF test düzeneği" -Encoding utf8
-            }
-            return $kok
-          }
-
-          function Kurulumu-Dogrula([string]$oyun, [string]$beklenenCerceve, [string]$beklenenDll) {
-            $kurCiktisi = & $exe kur $oyun 2>&1
-            $kurCiktisi | Add-Content artifacts/KURULUM-TESTI.txt
-            if ($LASTEXITCODE -ne 0) {
-              throw "Kurulum komutu başarısız oldu: $oyun"
-            }
-            if (($kurCiktisi -join "`n") -notmatch [regex]::Escape($beklenenCerceve)) {
-              throw "Beklenen hedef çerçeve seçilmedi: $beklenenCerceve"
-            }
-
-            $kuruluDll = Join-Path $oyun "BepInEx/plugins/UMMF/UMMF.BepInEx5.Mono.dll"
-            if (-not (Test-Path $kuruluDll)) {
-              throw "Plugin DLL'si kurulmadı: $kuruluDll"
-            }
-            if ((Get-FileHash $kuruluDll -Algorithm SHA256).Hash -ne (Get-FileHash $beklenenDll -Algorithm SHA256).Hash) {
-              throw "EXE içinden çıkarılan plugin beklenen derleme ile aynı değil."
-            }
-
-            & $exe durum $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
-            if ($LASTEXITCODE -ne 0) {
-              throw "Durum komutu başarısız oldu."
-            }
-            & $exe rapor $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
-            if ($LASTEXITCODE -ne 0) {
-              throw "Rapor komutu başarısız oldu."
-            }
-            if (-not (Test-Path (Join-Path $oyun "BepInEx/UMMF/raporlar/kurulum-teshis-raporu.json"))) {
-              throw "Kurulum teşhis raporu üretilmedi."
-            }
-
-            & $exe kaldir $oyun 2>&1 | Add-Content artifacts/KURULUM-TESTI.txt
-            if ($LASTEXITCODE -ne 0) {
-              throw "Kaldırma komutu başarısız oldu."
-            }
-            if (Test-Path $kuruluDll) {
-              throw "Plugin DLL'si kaldırılamadı."
-            }
-            if (-not (Test-Path (Join-Path $oyun "BepInEx/UMMF/modlar"))) {
-              throw "Kaldırma kullanıcı mod klasörünü silmemeliydi."
-            }
-          }
-
-          $eskiOyun = Yeni-SahteOyun "UMMF-Eski-Mono" $false
-          $modernOyun = Yeni-SahteOyun "UMMF-Modern-Mono" $true
-          Kurulumu-Dogrula $eskiOyun "net35" "src/UMMF.BepInEx5.Mono/bin/Release/net35/UMMF.BepInEx5.Mono.dll"
-          Kurulumu-Dogrula $modernOyun "netstandard2.0" "src/UMMF.BepInEx5.Mono/bin/Release/netstandard2.0/UMMF.BepInEx5.Mono.dll"
+          & ./.github/scripts/bepinex5-kurulum-testi.ps1 `
+            -ExeYolu "artifacts/UMMF-v$env:SURUM-windows-x64.exe" `
+            -Surum $env:SURUM
 
       - name: SHA-256 özeti oluştur
         shell: pwsh
