@@ -279,9 +279,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ETIKET: ${{ steps.surum.outputs.etiket }}
           SURUM: ${{ steps.surum.outputs.deger }}
+          DEPO: ${{ github.repository }}
         shell: pwsh
         run: |
-          $surumBilgisi = gh release view $env:ETIKET --json assets,isLatest,isPrerelease | ConvertFrom-Json
+          $surumBilgisi = gh release view $env:ETIKET --json assets,isPrerelease,tagName | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) {
             throw "GitHub Release doğrulanamadı."
           }
@@ -294,8 +295,16 @@ jobs:
           if ($surumBilgisi.isPrerelease) {
             throw "Release yanlışlıkla ön sürüm olarak işaretlenmiş."
           }
-          if (-not $surumBilgisi.isLatest) {
-            throw "Release, Latest olarak işaretlenmemiş."
+          if ($surumBilgisi.tagName -ne $env:ETIKET) {
+            throw "Release etiketi beklenen etiketle eşleşmiyor."
+          }
+
+          $latestEtiket = gh api "repos/$env:DEPO/releases/latest" --jq '.tag_name'
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Latest Release kaydı okunamadı."
+          }
+          if ($latestEtiket.Trim() -ne $env:ETIKET) {
+            throw "Release, GitHub Latest kaydı olarak görünmüyor. Beklenen: $env:ETIKET; bulunan: $latestEtiket"
           }
 
           gh issue comment 14 --body "$env:ETIKET; Windows EXE açılış testi, net35/netstandard2.0 gömülü plugin kurulumu, durum, rapor ve kaldırma testlerinden geçti. Normal Latest Release olarak doğrulandı."
