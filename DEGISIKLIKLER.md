@@ -1,5 +1,22 @@
 # Değişiklik Günlüğü
 
+## 0.4.0-onizleme.1
+
+- Gerçek BepInEx 5 Unity Mono plugin projesi eklendi.
+- Aynı plugin kaynak kodu `net35` ve `netstandard2.0` hedefleri için derlenir hale getirildi.
+- Eski Unity Mono oyunlarında `net35`, Managed klasöründe `netstandard.dll` bulunan oyunlarda `netstandard2.0` seçimi eklendi.
+- `BepInPlugin` ve `BaseUnityPlugin` tabanlı gerçek oyun içi giriş sınıfı eklendi.
+- Türkçe başlangıç, ortam, mod keşfi ve hata logları eklendi.
+- `BepInEx/UMMF/modlar` ve `BepInEx/UMMF/raporlar` klasörleri eklendi.
+- Oyun içi `uyumluluk-raporu.json` üretimi eklendi.
+- Windows EXE içine iki BepInEx plugin DLL'sini gömme altyapısı eklendi.
+- `kur`, `durum`, `rapor` ve `kaldir` komutları eklendi.
+- IL2CPP, BepInEx 6 veya doğrulanamayan oyun ortamına yanlış plugin kurulması engellendi.
+- Plugin DLL'si için SHA-256 durum denetimi eklendi.
+- Kaldırma sırasında kullanıcı modlarının ve raporlarının korunması sağlandı.
+- Eski/yeni Mono hedef seçimi ve güvenli reddetme davranışları için birim testleri eklendi.
+- BepInEx 5 Mono kurulum ve gerçek oyun test belgesi eklendi.
+
 ## 0.3.0-onizleme.2
 
 - GitHub Release çıktısı ZIP yerine doğrudan Windows x64 EXE olacak şekilde değiştirildi.
