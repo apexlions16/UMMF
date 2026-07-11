@@ -1,0 +1,155 @@
+name: Sürüm oluştur
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  derle-ve-yayinla:
+    name: Windows paketini derle ve yayımla
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: .NET ortamını kur
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Sürümü oku
+        id: surum
+        shell: bash
+        run: |
+          SURUM="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$SURUM" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Geçersiz VERSION değeri: $SURUM" >&2
+            exit 1
+          fi
+          echo "deger=$SURUM" >> "$GITHUB_OUTPUT"
+          echo "etiket=v$SURUM" >> "$GITHUB_OUTPUT"
+
+      - name: Mevcut sürümü denetle
+        id: mevcut
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIKET: ${{ steps.surum.outputs.etiket }}
+        shell: bash
+        run: |
+          if gh release view "$ETIKET" >/dev/null 2>&1; then
+            echo "var=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "var=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Eski önizleme kaydını Türkçeleştir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view "v0.1.0-preview.1" >/dev/null 2>&1; then
+            gh release edit "v0.1.0-preview.1" \
+              --title "UMMF 0.1.0 Önizleme 1" \
+              --notes-file "belgeler/surum-notlari/0.1.0-preview.1.md"
+          fi
+
+      - name: Bağımlılıkları geri yükle
+        if: steps.mevcut.outputs.var != 'true'
+        run: dotnet restore UMMF.sln
+
+      - name: Çözümü derle
+        if: steps.mevcut.outputs.var != 'true'
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | tee derleme.log
+
+      - name: Testleri çalıştır
+        if: steps.mevcut.outputs.var != 'true'
+        run: dotnet test UMMF.sln --configuration Release --no-build
+
+      - name: Windows önizleme paketini hazırla
+        if: steps.mevcut.outputs.var != 'true'
+        shell: bash
+        env:
+          SURUM: ${{ steps.surum.outputs.deger }}
+        run: |
+          mkdir -p artifacts/paket/semalar artifacts/paket/ornekler/OrnekMedyaModu
+          dotnet publish src/UMMF.KomutSatiri/UMMF.KomutSatiri.csproj \
+            --configuration Release \
+            --runtime win-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            --output artifacts/paket
+          cp README.md VERSION DEGISIKLIKLER.md artifacts/paket/
+          cp semalar/mod-bildirimi.sema.json artifacts/paket/semalar/
+          cp ornekler/OrnekMedyaModu/mod.json artifacts/paket/ornekler/OrnekMedyaModu/
+          (cd artifacts/paket && zip -r "../UMMF-v${SURUM}-windows-x64.zip" .)
+          git archive --format=zip --output="artifacts/UMMF-v${SURUM}-kaynak-kodu.zip" HEAD
+          (cd artifacts && sha256sum *.zip > SHA256-OZETLERI.txt)
+
+      - name: Etiket ve GitHub sürümü oluştur
+        if: steps.mevcut.outputs.var != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SURUM: ${{ steps.surum.outputs.deger }}
+          ETIKET: ${{ steps.surum.outputs.etiket }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$ETIKET" -m "UMMF $SURUM"
+          git push origin "$ETIKET"
+
+          NOT_DOSYASI="belgeler/surum-notlari/${SURUM}.md"
+          if [[ ! -f "$NOT_DOSYASI" ]]; then
+            NOT_DOSYASI="${RUNNER_TEMP}/surum-notlari.md"
+            printf '# UMMF %s\n\nOtomatik oluşturulan önizleme sürümü.\n' "$SURUM" > "$NOT_DOSYASI"
+          fi
+
+          if [[ "$SURUM" == *-* ]]; then
+            gh release create "$ETIKET" \
+              artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
+              --title "UMMF $SURUM" \
+              --notes-file "$NOT_DOSYASI" \
+              --prerelease
+          else
+            gh release create "$ETIKET" \
+              artifacts/*.zip artifacts/SHA256-OZETLERI.txt \
+              --title "UMMF $SURUM" \
+              --notes-file "$NOT_DOSYASI"
+          fi
+
+      - name: Sürüm hatasını bildir
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SURUM: ${{ steps.surum.outputs.deger }}
+          CALISMA_ADRESI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          BASLIK="Sürüm ${SURUM:-bilinmiyor} oluşturulamadı (çalışma ${{ github.run_id }})"
+          GECICI_DOSYA="${RUNNER_TEMP}/sorun.md"
+          {
+            echo "Otomatik sürüm iş akışı başarısız oldu."
+            echo
+            echo "Çalışma: $CALISMA_ADRESI"
+            if [[ -f derleme.log ]]; then
+              echo
+              echo '```text'
+              tail -n 80 derleme.log
+              echo '```'
+            fi
+          } > "$GECICI_DOSYA"
+          gh issue create --title "$BASLIK" --body-file "$GECICI_DOSYA"
