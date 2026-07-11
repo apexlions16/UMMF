@@ -1,0 +1,117 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid VERSION value: $VERSION" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Skip an existing release
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore
+        if: steps.existing.outputs.exists != 'true'
+        run: dotnet restore UMMF.sln
+
+      - name: Build
+        if: steps.existing.outputs.exists != 'true'
+        run: dotnet build UMMF.sln --configuration Release --no-restore
+
+      - name: Test
+        if: steps.existing.outputs.exists != 'true'
+        run: dotnet test UMMF.sln --configuration Release --no-build
+
+      - name: Publish Windows preview
+        if: steps.existing.outputs.exists != 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p artifacts/package/schemas artifacts/package/samples/ExampleMediaMod
+          dotnet publish src/UMMF.Cli/UMMF.Cli.csproj \
+            --configuration Release \
+            --runtime win-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            --output artifacts/package
+          cp README.md VERSION artifacts/package/
+          cp schemas/mod-manifest.schema.json artifacts/package/schemas/
+          cp samples/ExampleMediaMod/mod.json artifacts/package/samples/ExampleMediaMod/
+          (cd artifacts/package && zip -r "../UMMF-v${VERSION}-win-x64.zip" .)
+          git archive --format=zip --output="artifacts/UMMF-v${VERSION}-source.zip" HEAD
+          (cd artifacts && sha256sum *.zip > SHA256SUMS.txt)
+
+      - name: Create tag and GitHub release
+        if: steps.existing.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "UMMF $VERSION"
+          git push origin "$TAG"
+
+          NOTES_FILE="docs/release-notes/${VERSION}.md"
+          if [[ ! -f "$NOTES_FILE" ]]; then
+            NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+            printf '# UMMF %s\n\nAutomated preview release.\n' "$VERSION" > "$NOTES_FILE"
+          fi
+
+          if [[ "$VERSION" == *-* ]]; then
+            gh release create "$TAG" \
+              artifacts/*.zip artifacts/SHA256SUMS.txt \
+              --title "UMMF $VERSION" \
+              --notes-file "$NOTES_FILE" \
+              --prerelease
+          else
+            gh release create "$TAG" \
+              artifacts/*.zip artifacts/SHA256SUMS.txt \
+              --title "UMMF $VERSION" \
+              --notes-file "$NOTES_FILE"
+          fi
