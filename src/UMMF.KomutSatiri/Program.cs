@@ -7,7 +7,7 @@ namespace UMMF.KomutSatiri;
 
 internal static class Program
 {
-    private const string OnizlemeSurumu = "0.2.0-onizleme.1";
+    private const string OnizlemeSurumu = "0.2.0-onizleme.2";
 
     private static int Main(string[] args)
     {
