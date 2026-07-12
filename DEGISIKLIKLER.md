@@ -1,5 +1,19 @@
 # Değişiklik Günlüğü
 
+## Ana dal — topluluk katkı ve uyumluluk altyapısı
+
+- README, topluluk desteği ve katkı yollarını görünür biçimde açıklayacak şekilde genişletildi.
+- Testçiler için GitHub **Oyun uyumluluğu bildir** seçim formu eklendi.
+- Yazılımcılar için doku, ses, altyazı, seslendirme, Addressables, FMOD ve Wwise alanlarını seçebilen **Medya uyarlayıcısı geliştirme** formu eklendi.
+- Fork, branch ve pull request akışını açıklayan `CONTRIBUTING.md` eklendi.
+- Oyunlara özgü `oyun-profilleri/<oyun-kimligi>/` klasör standardı ve JSON şablonu eklendi.
+- Oyun adı, Unity sürümü, Mono/IL2CPP, mimari, BepInEx/host ve medya alanlarını izleyen alfabetik `UYUMLULUK.md` listesi eklendi.
+- `uyumluluk/oyunlar.json` tek uyumluluk veri kaynağı olarak tanımlandı.
+- Yinelenen oyunları, geçersiz durumları ve alfabetik sıralamayı doğrulayan liste üreticisi eklendi.
+- Uyumluluk tablosunun ve oyun profillerinin pull requestlerde otomatik denetlenmesini sağlayan GitHub Actions iş akışı eklendi.
+- Oyun dosyalarının ve telifli varlıkların gönderilmesini engelleyen katkı güvenlik kuralları eklendi.
+- Topluluk katkıları için ayrıntılı pull request kontrol listesi eklendi.
+
 ## 0.4.0-onizleme.1
 
 - Gerçek BepInEx 5 Unity Mono plugin projesi eklendi.
