@@ -14,7 +14,7 @@ UMMF, IL2CPP oyununa veya BepInEx 6 kurulumuna BepInEx 5 Mono DLL'sini yerleşti
 ## Ortamı tarama
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
 ```
 
 Beklenen temel sonuçlar:
@@ -26,7 +26,7 @@ Beklenen temel sonuçlar:
 ## Kurulum
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe kur "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe kur "D:\Oyunlar\OrnekOyun"
 ```
 
 Kurucu oyun ortamına göre iki DLL'den birini seçer:
@@ -52,7 +52,7 @@ BepInEx/
 ## Durum denetimi
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe durum "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe durum "D:\Oyunlar\OrnekOyun"
 ```
 
 Komut plugin dosyasını, seçilen hedef çerçeveyi ve SHA-256 özetini gösterir.
@@ -62,7 +62,7 @@ Komut plugin dosyasını, seçilen hedef çerçeveyi ve SHA-256 özetini göster
 Oyunu bir kez başlatıp ana menüye ulaştıktan sonra kapat. Ardından `BepInEx/LogOutput.log` içinde şu iletileri ara:
 
 ```text
-UMMF 0.4.0-onizleme.1 başlatılıyor.
+UMMF 0.5.0-onizleme.1 başlatılıyor.
 Çalışma zamanı hostu: BepInEx 5 Unity Mono
 UMMF mod klasörü hazır
 UMMF başlangıcı başarıyla tamamlandı.
@@ -79,7 +79,7 @@ BepInEx/UMMF/raporlar/uyumluluk-raporu.json
 Oyun açılmadan önce kurulum raporu üretmek için:
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe rapor "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe rapor "D:\Oyunlar\OrnekOyun"
 ```
 
 Rapor konumu:
@@ -91,7 +91,7 @@ BepInEx/UMMF/raporlar/kurulum-teshis-raporu.json
 ## Kaldırma
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe kaldir "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe kaldir "D:\Oyunlar\OrnekOyun"
 ```
 
 Kaldırma yalnızca UMMF plugin DLL'sini ve kurulum bilgisini siler. Kullanıcının `modlar` klasörü ile raporları korunur.

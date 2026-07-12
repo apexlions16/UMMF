@@ -21,7 +21,7 @@ UMMF tek bir Unity veya BepInEx sürümüne bağlı değildir. Ortak çekirdek; 
 
 ## Güncel durum
 
-Güncel önizleme sürümü: `0.4.0-onizleme.1`
+Güncel önizleme sürümü: `0.5.0-onizleme.1`
 
 Bu sürüm ilk gerçek oyun içi hostu içerir:
 
@@ -37,8 +37,13 @@ Bu sürüm ilk gerçek oyun içi hostu içerir:
 - IL2CPP veya yanlış BepInEx nesline kurulumu durduran güvenlik kontrolleri
 - plugin dosyası için SHA-256 durum doğrulaması
 - eski ve yeni Mono hedef seçimi birim testleri
+- Bad Parenting 1: Mr. Red Face için doğrulanmış Unity Mono x86 oyun profili
+- `MOD` klasöründen geri alınabilir BepInEx 5 x86 ve ses modu kurulumu
+- 214 satırlık ses eşlemesi ile WAV/OGG/MP3 doğrulaması
+- Türkçe diyalog satırlarında Unity `AudioSource` ile seslendirme oynatma
+- `ses-planla` dry-run komutu ve SHA-256 izlemeli yedek/geri yükleme
 
-Bu sürümde doku, ses ve altyazı değiştirme henüz etkin değildir. Amaç, gerçek pluginin oyunda güvenli biçimde yüklenmesini ve ortak mod klasörünü hazırlamasını doğrulamaktır.
+Genel doku ve altyazı değiştirme henüz etkin değildir. Ses oynatma ilk olarak Bad Parenting profili için etkindir.
 
 UMMF özgün Unity varlık dosyalarını veya oyun çalıştırılabilir dosyasını yerinde değiştirmez.
 
@@ -48,7 +53,7 @@ Deneme sürümleri GitHub sayfasındaki **Releases** bölümünde normal **Lates
 
 Doğrudan indirilecek dosya:
 
-`UMMF-v0.4.0-onizleme.1-windows-x64.exe`
+`UMMF-v0.5.0-onizleme.1-windows-x64.exe`
 
 EXE kendi .NET çalışma zamanını içerir. ZIP açma veya kaynak kodu derleme gerekmez. Gerekli BepInEx plugin DLL'leri EXE içine gömülüdür.
 
@@ -57,13 +62,24 @@ EXE kendi .NET çalışma zamanını içerir. ZIP açma veya kaynak kodu derleme
 İndirdiğin EXE'nin bulunduğu klasörde PowerShell aç:
 
 ```powershell
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe bilgi
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe kur "D:\Oyunlar\OrnekOyun"
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe durum "D:\Oyunlar\OrnekOyun"
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe rapor "D:\Oyunlar\OrnekOyun"
-./UMMF-v0.4.0-onizleme.1-windows-x64.exe kaldir "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe bilgi
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe oyun-tara "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe kur "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe durum "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe rapor "D:\Oyunlar\OrnekOyun"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe kaldir "D:\Oyunlar\OrnekOyun"
 ```
+
+### Bad Parenting 1 ses modu
+
+Oyun kökündeki `MOD` klasörüne izinli/kullanıcı üretimi sesleri `000_SON.wav`, `001_MOM.ogg` gibi manifest adlarıyla koy. Önce değişiklik yapmayan planı çalıştır:
+
+```powershell
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe ses-planla "D:\SteamLibrary\steamapps\common\Bad Parenting 1 Mr. Red Face"
+./UMMF-v0.5.0-onizleme.1-windows-x64.exe kur "D:\SteamLibrary\steamapps\common\Bad Parenting 1 Mr. Red Face"
+```
+
+`durum`, `rapor` ve `kaldir` aynı oyun yolu ile çalışır. `MOD/Dub` boşsa altyapı kurulur fakat ses oynatılmaz; sonuç `0/214` olarak raporlanır.
 
 ### `oyun-tara <oyun-dizini>`
 
@@ -103,7 +119,7 @@ Yalnızca UMMF plugin DLL'sini ve kurulum bilgisini kaldırır. Kullanıcı modl
 Kurulumdan sonra oyunu bir kez açıp kapat. `BepInEx/LogOutput.log` içinde şu satırların bulunması beklenir:
 
 ```text
-UMMF 0.4.0-onizleme.1 başlatılıyor.
+UMMF 0.5.0-onizleme.1 başlatılıyor.
 Çalışma zamanı hostu: BepInEx 5 Unity Mono
 UMMF mod klasörü hazır
 UMMF başlangıcı başarıyla tamamlandı.
@@ -250,7 +266,7 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 - [Uyumluluk hedefleri](belgeler/uyumluluk-hedefleri.md)
 - [Güncelleme dayanıklılığı](belgeler/guncelleme-dayanikliligi.md)
 - [Değişiklik günlüğü](DEGISIKLIKLER.md)
-- [0.4.0 Önizleme 1 sürüm notları](belgeler/surum-notlari/0.4.0-onizleme.1.md)
+- [0.5.0 Önizleme 1 sürüm notları](belgeler/surum-notlari/0.5.0-onizleme.1.md)
 
 ## Lisans
 

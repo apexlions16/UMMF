@@ -13,7 +13,9 @@ Bu liste topluluk ve proje geliştiricileri tarafından gerçek oyunlarda yapıl
 
 ## Oyunlar
 
-> Henüz gerçek kullanıcı testiyle doğrulanmış bir oyun kaydı yok. İlk kaydı eklemek için GitHub'daki **Oyun uyumluluğu bildir** formunu kullanın.
+| Oyun | Test edilen sürüm | Unity | Arka uç | Mimari | BepInEx / Host | Doku | Ses | Altyazı | Altyazı seslendirme | Son test | Kanıt |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Bad Parenting 1: Mr. Red Face | Steam derlemesi (2026-07-12) | 2022.2.0b16 | Mono | x86 | UMMF BepInEx 5 Mono | — | 🟡 Kısmi | — | ⏳ Test bekliyor | 2026-07-12 | [Kayıt](https://github.com/apexlions16/UMMF/pull/25) |
 
 ## Genel host durumu
 

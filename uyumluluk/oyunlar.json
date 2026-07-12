@@ -1,5 +1,22 @@
 {
   "semaSurumu": 1,
   "sonGuncelleme": "2026-07-12",
-  "oyunlar": []
+  "oyunlar": [
+    {
+      "kimlik": "bad-parenting-1-mr-red-face",
+      "ad": "Bad Parenting 1: Mr. Red Face",
+      "testEdilenOyunSurumu": "Steam derlemesi (2026-07-12)",
+      "unitySurumu": "2022.2.0b16",
+      "betikArkaUcu": "Mono",
+      "mimari": "x86",
+      "bepInEx": "BepInEx 5.4.23.5 x86",
+      "host": "UMMF BepInEx 5 Mono",
+      "doku": "destek-yok",
+      "ses": "kismi",
+      "altyazi": "destek-yok",
+      "seslendirme": "test-bekliyor",
+      "sonTestTarihi": "2026-07-12",
+      "kanit": "https://github.com/apexlions16/UMMF/pull/25"
+    }
+  ]
 }

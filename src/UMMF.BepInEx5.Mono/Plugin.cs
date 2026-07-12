@@ -15,7 +15,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string EklentiKimligi = "tr.ummf.bepinex5.mono";
     public const string EklentiAdi = "UMMF BepInEx 5 Mono Hostu";
-    public const string EklentiSurumu = "0.4.0-onizleme.1";
+    public const string EklentiSurumu = "0.5.0-onizleme.1";
 
 #if NET35
     private const string HedefCerceve = "net35";
@@ -38,6 +38,7 @@ public sealed class Plugin : BaseUnityPlugin
 
             var yollar = UMMFYollariniHazirla();
             var modlar = ModBildirimleriniTara(yollar.ModDizini);
+            var badParentingSesEtkin = BadParentingSesModu.Etkinlestir(yollar.ModDizini, _gunluk);
             var gecerliSayisi = 0;
             var gecersizSayisi = 0;
 
@@ -56,7 +57,7 @@ public sealed class Plugin : BaseUnityPlugin
                 }
             }
 
-            var raporYolu = UyumlulukRaporuYaz(yollar, modlar, gecerliSayisi, gecersizSayisi);
+            var raporYolu = UyumlulukRaporuYaz(yollar, modlar, gecerliSayisi, gecersizSayisi, badParentingSesEtkin);
             _gunluk.LogInfo("UMMF mod klasörü hazır: " + yollar.ModDizini);
             _gunluk.LogInfo("Geçerli mod sayısı: " + gecerliSayisi + "; geçersiz mod sayısı: " + gecersizSayisi + ".");
             _gunluk.LogInfo("Uyumluluk raporu: " + raporYolu);
@@ -145,7 +146,7 @@ public sealed class Plugin : BaseUnityPlugin
         return JsonMetniniCoz(eslesme.Groups["deger"].Value);
     }
 
-    private static string UyumlulukRaporuYaz(UMMFYollari yollar, IList<ModKaydi> modlar, int gecerli, int gecersiz)
+    private static string UyumlulukRaporuYaz(UMMFYollari yollar, IList<ModKaydi> modlar, int gecerli, int gecersiz, bool badParentingSesEtkin)
     {
         var raporYolu = Path.Combine(yollar.RaporDizini, "uyumluluk-raporu.json");
         var metin = new StringBuilder();
@@ -161,6 +162,7 @@ public sealed class Plugin : BaseUnityPlugin
         JsonSatiriEkle(metin, "modDizini", yollar.ModDizini, true, 1);
         metin.AppendLine("  \"gecerliModSayisi\": " + gecerli.ToString(CultureInfo.InvariantCulture) + ",");
         metin.AppendLine("  \"gecersizModSayisi\": " + gecersiz.ToString(CultureInfo.InvariantCulture) + ",");
+        metin.AppendLine("  \"badParentingSesModuEtkin\": " + (badParentingSesEtkin ? "true" : "false") + ",");
         metin.AppendLine("  \"modlar\": [");
 
         for (var i = 0; i < modlar.Count; i++)

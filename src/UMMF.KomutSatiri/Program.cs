@@ -7,7 +7,7 @@ namespace UMMF.KomutSatiri;
 
 internal static class Program
 {
-    internal const string OnizlemeSurumu = "0.4.0-onizleme.1";
+    internal const string OnizlemeSurumu = "0.5.0-onizleme.1";
 
     private static int Main(string[] args)
     {
@@ -22,6 +22,7 @@ internal static class Program
             "bilgi" or "--surum" or "-s" => BilgiyiYazdir(),
             "dogrula" => BildirimiDogrula(args),
             "oyun-tara" => OyunuTara(args),
+            "ses-planla" => BepInEx5KomutunuCalistir(args, yonetici => yonetici.SesPlanla(args[1])),
             "kur" => BepInEx5KomutunuCalistir(args, yonetici => yonetici.Kur(args[1])),
             "durum" => BepInEx5KomutunuCalistir(args, yonetici => yonetici.Durum(args[1])),
             "rapor" => BepInEx5KomutunuCalistir(args, yonetici => yonetici.RaporOlustur(args[1])),
@@ -40,7 +41,7 @@ internal static class Program
         Console.WriteLine("Evrensel Medya Modlama Çerçevesi");
         Console.WriteLine("Bu sürüm gerçek BepInEx 5 Unity Mono plugin hostunu ve güvenli Windows kurucusunu içerir.");
         Console.WriteLine("Eski Unity oyunları için net35, daha yeni Mono oyunları için netstandard2.0 eklentisi otomatik seçilir.");
-        Console.WriteLine("Doku, ses ve altyazı değiştirme işlemleri henüz etkin değildir.");
+        Console.WriteLine("Bad Parenting 1 için satır indeksli harici ses modu desteği etkindir.");
         return 0;
     }
 
@@ -328,6 +329,7 @@ internal static class Program
         Console.WriteLine("Komutlar:");
         Console.WriteLine("  bilgi                         Sürüm ve kapsam bilgilerini gösterir");
         Console.WriteLine("  oyun-tara <oyun-dizini>       Unity, Mono/IL2CPP, mimari ve host ortamını tarar");
+        Console.WriteLine("  ses-planla <oyun-dizini>      Bad Parenting ses kurulumunu değiştirmeden doğrular");
         Console.WriteLine("  kur <oyun-dizini>             Uygun BepInEx 5 Mono pluginini güvenli biçimde kurar");
         Console.WriteLine("  durum <oyun-dizini>           UMMF plugin kurulumunu ve SHA-256 özetini denetler");
         Console.WriteLine("  rapor <oyun-dizini>           Kurulum teşhis raporu oluşturur");
