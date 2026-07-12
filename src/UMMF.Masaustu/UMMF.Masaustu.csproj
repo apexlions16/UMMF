@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
-    <AssemblyName>UMMF</AssemblyName>
+    <AssemblyName>UMMF.Masaustu</AssemblyName>
     <RootNamespace>UMMF.Masaustu</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
