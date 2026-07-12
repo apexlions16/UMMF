@@ -80,7 +80,7 @@ jobs:
           $net35 = "src/UMMF.BepInEx5.Mono/bin/Release/net35/UMMF.BepInEx5.Mono.dll"
           $netstandard = "src/UMMF.BepInEx5.Mono/bin/Release/netstandard2.0/UMMF.BepInEx5.Mono.dll"
           $cli = "src/UMMF.KomutSatiri/bin/Release/net8.0/ummf.exe"
-          $gui = "src/UMMF.Masaustu/bin/Release/net8.0-windows/UMMF.dll"
+          $gui = "src/UMMF.Masaustu/bin/Release/net8.0-windows/UMMF.Masaustu.dll"
           foreach ($dosya in @($net35, $netstandard, $cli, $gui)) {
             if (-not (Test-Path $dosya)) {
               throw "Beklenen derleme çıktısı bulunamadı: $dosya"
@@ -105,7 +105,6 @@ jobs:
             --configuration Release `
             --runtime win-x64 `
             --self-contained true `
-            -p:BuildProjectReferences=false `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:EnableCompressionInSingleFile=true `
@@ -117,9 +116,9 @@ jobs:
             throw "Windows masaüstü EXE üretilemedi."
           }
 
-          $kaynak = "artifacts/paket/UMMF.exe"
+          $kaynak = "artifacts/paket/UMMF.Masaustu.exe"
           if (-not (Test-Path $kaynak)) {
-            throw "Yayın çıktısında UMMF.exe bulunamadı."
+            throw "Yayın çıktısında UMMF.Masaustu.exe bulunamadı."
           }
 
           $hedef = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
