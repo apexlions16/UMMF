@@ -1,0 +1,77 @@
+name: Masaüstü arayüzünü doğrula
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/UMMF.Masaustu/**'
+      - 'src/UMMF.KomutSatiri/**'
+      - 'src/UMMF.Cekirdek/**'
+      - 'src/UMMF.Sozlesmeler/**'
+      - 'UMMF.sln'
+      - '.github/workflows/arayuz-dogrula.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ummf-arayuz-dogrula
+  cancel-in-progress: true
+
+jobs:
+  dogrula:
+    name: Windows arayüz derlemesi
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: .NET ortamını kur
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Bağımlılıkları geri yükle
+        shell: pwsh
+        run: |
+          dotnet restore UMMF.sln 2>&1 | Tee-Object -FilePath restore.log
+          if ($LASTEXITCODE -ne 0) {
+            throw "Bağımlılıklar geri yüklenemedi."
+          }
+
+      - name: Çözümü derle
+        shell: pwsh
+        run: |
+          dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | Tee-Object -FilePath derleme.log
+          if ($LASTEXITCODE -ne 0) {
+            throw "Çözüm derlenemedi."
+          }
+
+      - name: Arayüz doğrulama hatasını bildir
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CALISMA_ADRESI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: pwsh
+        run: |
+          $dosya = "$env:RUNNER_TEMP/arayuz-hatasi.md"
+          $satirlar = @(
+            'Masaüstü arayüz doğrulaması başarısız oldu.',
+            '',
+            "Çalışma: $env:CALISMA_ADRESI"
+          )
+          foreach ($gunluk in @('restore.log', 'derleme.log')) {
+            if (Test-Path $gunluk) {
+              $satirlar += ''
+              $satirlar += "### $gunluk"
+              $satirlar += '```text'
+              $satirlar += Get-Content $gunluk | Select-Object -Last 120
+              $satirlar += '```'
+            }
+          }
+          $satirlar | Set-Content $dosya -Encoding utf8
+          gh issue create --title "Masaüstü arayüz doğrulaması başarısız (çalışma ${{ github.run_id }})" --body-file $dosya
