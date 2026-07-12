@@ -1,5 +1,23 @@
 # Değişiklik Günlüğü
 
+## 0.6.0-onizleme.1
+
+- UMMF'nin temel kullanımını PowerShell'den çıkaran Türkçe Windows masaüstü arayüzü eklendi.
+- Koyu temalı, sol menülü ve kart tabanlı yeni `UMMF.Masaustu` projesi eklendi.
+- Ana Sayfa, Oyun ve Kurulum, Uyumluluk, Topluluk Katkısı ve Günlük ekranları eklendi.
+- Windows klasör seçiciyle Unity oyunu seçme ve otomatik tarama eklendi.
+- Unity sürümü, Mono/IL2CPP, mimari, BepInEx, host, TextMeshPro, Unity UI, FMOD ve Wwise bilgileri arayüze taşındı.
+- Ses planı, kurulum, durum, rapor ve kaldırma işlemleri düğmelere bağlandı.
+- `uyumluluk/oyunlar.json` içeriğini gösteren gömülü alfabetik uyumluluk tablosu eklendi.
+- Doku, ses, altyazı ve seslendirme durumlarının seçilebildiği topluluk katkı formu eklendi.
+- Oyun dosyası veya telifli varlık içermeyen güvenli katkı ZIP'i üretimi eklendi.
+- Türkçe işlem günlüğü, renkli başarı/uyarı/hata durumları ve metin dışa aktarma eklendi.
+- Masaüstü uygulaması için Windows DPI ve asInvoker bildirimi eklendi.
+- GUI EXE'nin beş ekranını doğrulayan `--arayuz-testi` duman testi eklendi.
+- Release iş akışı komut satırı EXE'si yerine self-contained tek dosyalı GUI EXE yayımlayacak şekilde değiştirildi.
+- CLI kurulum motoru arayüz tarafından yeniden kullanılabilir hâle getirildi.
+- GUI, CLI ve BepInEx plugin sürümleri `0.6.0-onizleme.1` olarak eşitlendi.
+
 ## 0.5.0-onizleme.1
 
 - Bad Parenting 1: Mr. Red Face için EXE, Data, ürün metadata’sı, Unity Mono x86 ve bilinen dosya özetlerine dayalı oyun profili eklendi.
