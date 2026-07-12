@@ -1,0 +1,83 @@
+name: Uyumluluk listesini doğrula
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "uyumluluk/**"
+      - "oyun-profilleri/**"
+      - "araclar/uyumluluk_listesi_uret.py"
+      - "UYUMLULUK.md"
+      - ".github/workflows/uyumluluk-dogrula.yml"
+  pull_request:
+    paths:
+      - "uyumluluk/**"
+      - "oyun-profilleri/**"
+      - "araclar/uyumluluk_listesi_uret.py"
+      - "UYUMLULUK.md"
+      - ".github/workflows/uyumluluk-dogrula.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dogrula:
+    name: JSON verisini ve alfabetik listeyi doğrula
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python ortamını kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Uyumluluk listesini yeniden üret
+        run: python araclar/uyumluluk_listesi_uret.py
+
+      - name: Üretilmiş dosyanın güncel olduğunu doğrula
+        shell: bash
+        run: |
+          if ! git diff --exit-code -- UYUMLULUK.md; then
+            echo "UYUMLULUK.md, uyumluluk/oyunlar.json ile eşleşmiyor."
+            echo "Yerelde 'python araclar/uyumluluk_listesi_uret.py' çalıştırın."
+            exit 1
+          fi
+
+      - name: Oyun profili JSON dosyalarını doğrula
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          hatalar = []
+          for yol in sorted(Path("oyun-profilleri").glob("*/profil.json")):
+              if yol.parts[-2] == "_sablon":
+                  continue
+              try:
+                  veri = json.loads(yol.read_text(encoding="utf-8"))
+              except Exception as hata:
+                  hatalar.append(f"{yol}: geçersiz JSON: {hata}")
+                  continue
+
+              zorunlu = [
+                  "kimlik", "ad", "testEdilenOyunSurumu", "unitySurumu",
+                  "betikArkaUcu", "mimari", "bepInEx", "medya",
+                  "sonTestTarihi", "ummfSurumu"
+              ]
+              eksikler = [alan for alan in zorunlu if not veri.get(alan)]
+              if eksikler:
+                  hatalar.append(f"{yol}: eksik alanlar: {', '.join(eksikler)}")
+
+              beklenen_klasor = veri.get("kimlik")
+              if beklenen_klasor and yol.parts[-2] != beklenen_klasor:
+                  hatalar.append(
+                      f"{yol}: klasör adı '{yol.parts[-2]}', kimlik '{beklenen_klasor}' ile eşleşmiyor."
+                  )
+
+          if hatalar:
+              raise SystemExit("\n".join(hatalar))
+
+          print("Oyun profili JSON dosyaları geçerli.")
