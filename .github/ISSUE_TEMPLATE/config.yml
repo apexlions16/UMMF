@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: UMMF uyumluluk listesi
+    url: https://github.com/apexlions16/UMMF/blob/main/UYUMLULUK.md
+    about: Bir sorun açmadan önce doğrulanmış oyunları ve destek durumunu kontrol edin.
+  - name: Katkı rehberi
+    url: https://github.com/apexlions16/UMMF/blob/main/CONTRIBUTING.md
+    about: Oyun profili, uyarlayıcı ve test katkısı hazırlama kurallarını okuyun.
