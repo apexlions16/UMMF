@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.BepInEx5.Mono", "src\U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.KomutSatiri", "src\UMMF.KomutSatiri\UMMF.KomutSatiri.csproj", "{A6E90F44-74AD-4F84-A0F6-C3F0B2824309}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.Masaustu", "src\UMMF.Masaustu\UMMF.Masaustu.csproj", "{E7EDAC22-2A08-47F5-81E6-6D828DB80251}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMMF.Cekirdek.Testleri", "tests\UMMF.Cekirdek.Testleri\UMMF.Cekirdek.Testleri.csproj", "{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}"
 EndProject
 Global
@@ -34,6 +36,10 @@ Global
 		{A6E90F44-74AD-4F84-A0F6-C3F0B2824309}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6E90F44-74AD-4F84-A0F6-C3F0B2824309}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6E90F44-74AD-4F84-A0F6-C3F0B2824309}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7EDAC22-2A08-47F5-81E6-6D828DB80251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7EDAC22-2A08-47F5-81E6-6D828DB80251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7EDAC22-2A08-47F5-81E6-6D828DB80251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7EDAC22-2A08-47F5-81E6-6D828DB80251}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43A464C4-C7B8-4360-AE60-ECFC0A2D34F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
