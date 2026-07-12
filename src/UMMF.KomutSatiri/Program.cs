@@ -7,7 +7,7 @@ namespace UMMF.KomutSatiri;
 
 internal static class Program
 {
-    internal const string OnizlemeSurumu = "0.5.0-onizleme.1";
+    internal const string OnizlemeSurumu = "0.6.0-onizleme.1";
 
     private static int Main(string[] args)
     {
@@ -39,7 +39,7 @@ internal static class Program
     {
         Console.WriteLine($"UMMF {OnizlemeSurumu}");
         Console.WriteLine("Evrensel Medya Modlama Çerçevesi");
-        Console.WriteLine("Bu sürüm gerçek BepInEx 5 Unity Mono plugin hostunu ve güvenli Windows kurucusunu içerir.");
+        Console.WriteLine("Bu sürüm Türkçe Windows masaüstü arayüzünü, BepInEx 5 Unity Mono hostunu ve güvenli kurulum motorunu içerir.");
         Console.WriteLine("Eski Unity oyunları için net35, daha yeni Mono oyunları için netstandard2.0 eklentisi otomatik seçilir.");
         Console.WriteLine("Bad Parenting 1 için satır indeksli harici ses modu desteği etkindir.");
         return 0;
