@@ -1,0 +1,26 @@
+{
+  "kimlik": "ornek-oyun",
+  "ad": "Örnek Oyun",
+  "testEdilenOyunSurumu": "1.0.0",
+  "unitySurumu": "2019.4.40f1",
+  "betikArkaUcu": "Mono",
+  "mimari": "x64",
+  "bepInEx": "BepInEx 5.4.23.2",
+  "host": "BepInEx 5 Mono",
+  "platform": "Windows",
+  "medya": {
+    "doku": "test-bekliyor",
+    "ses": "test-bekliyor",
+    "altyazi": "test-bekliyor",
+    "seslendirme": "test-bekliyor",
+    "addressables": "bilinmiyor",
+    "fmod": "bilinmiyor",
+    "wwise": "bilinmiyor"
+  },
+  "sonTestTarihi": "2026-07-12",
+  "ummfSurumu": "0.4.0-onizleme.1",
+  "kanit": "https://github.com/apexlions16/UMMF/issues/000",
+  "notlar": [
+    "Bu dosya şablondur; gerçek oyun bilgileriyle değiştirin."
+  ]
+}
