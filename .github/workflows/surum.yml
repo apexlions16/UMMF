@@ -134,12 +134,15 @@ jobs:
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
-          $exe = Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
-          $sonuc = Resolve-Path artifacts
-          $rapor = Join-Path $sonuc "ARAYUZ-TESTI.txt"
-          & $exe --arayuz-testi $rapor
-          if ($LASTEXITCODE -ne 0) {
-            throw "Masaüstü arayüz duman testi başarısız oldu."
+          $exe = (Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe").Path
+          $rapor = Join-Path (Resolve-Path artifacts).Path "ARAYUZ-TESTI.txt"
+          $surec = Start-Process `
+            -FilePath $exe `
+            -ArgumentList @('--arayuz-testi', $rapor) `
+            -Wait `
+            -PassThru
+          if ($surec.ExitCode -ne 0) {
+            throw "Masaüstü arayüz duman testi $($surec.ExitCode) çıkış koduyla başarısız oldu."
           }
           if (-not (Test-Path $rapor)) {
             throw "Arayüz test raporu oluşturulmadı."
