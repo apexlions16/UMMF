@@ -1,0 +1,105 @@
+name: Medya uyarlayıcısı geliştirme
+description: Belirli bir oyun, Unity sürümü veya çalışma zamanı için doku, ses ya da altyazı desteği geliştirin.
+title: "[Uyarlayıcı]: "
+labels:
+  - gelistirme
+  - uyarlayici
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu form yazılımcıların geliştirmek istediği host veya medya alanını önceden seçmesi içindir. Aynı işin iki kez yapılmasını önlemek için geliştirmeye başlamadan önce bu kaydı açın.
+
+  - type: input
+    id: hedef
+    attributes:
+      label: Hedef oyun veya ortam
+      description: Belirli bir oyun ya da genel bir Unity/BepInEx hedefi yazın.
+      placeholder: Örnek Oyun veya Unity 2018 + BepInEx 5 Mono
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arka-uc
+    attributes:
+      label: Betik arka ucu
+      options:
+        - Mono
+        - IL2CPP
+        - Her ikisi
+        - Henüz bilinmiyor
+    validations:
+      required: true
+
+  - type: dropdown
+    id: host
+    attributes:
+      label: Hedef host / yükleyici
+      options:
+        - Eski BepInEx Mono
+        - BepInEx 5 Mono
+        - BepInEx 6 Mono
+        - BepInEx 6 IL2CPP
+        - Yükleyicisiz ortam algılama
+        - Başka bir yükleyici
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: kapsam
+    attributes:
+      label: Geliştirme kapsamı
+      options:
+        - label: Doku keşfi
+        - label: Doku dışarı aktarma
+        - label: Doku değiştirme
+        - label: Sprite ve atlas desteği
+        - label: Ses keşfi
+        - label: Ses dışarı aktarma
+        - label: Ses değiştirme
+        - label: Unity UI altyazıları
+        - label: TextMeshPro altyazıları
+        - label: Unity Localization anahtarları
+        - label: Altyazı değiştirme
+        - label: Altyazı tetiklemeli seslendirme
+        - label: Addressables
+        - label: FMOD
+        - label: Wwise
+        - label: Kurulum / kaldırma
+        - label: Oyun profili ve uyumluluk testi
+    validations:
+      required: true
+
+  - type: textarea
+    id: yaklasim
+    attributes:
+      label: Teknik yaklaşım
+      description: Kullanılacak hook, API, host veya veri modeli yaklaşımını açıklayın.
+    validations:
+      required: true
+
+  - type: textarea
+    id: teslimatlar
+    attributes:
+      label: Planlanan teslimatlar
+      placeholder: |
+        - [ ] Host sınıfı
+        - [ ] Testler
+        - [ ] Oyun profili
+        - [ ] Türkçe belge
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: katkici-onayi
+    attributes:
+      label: Katkı kuralları
+      options:
+        - label: Değişiklikleri ayrı bir fork/branch üzerinden PR olarak göndereceğim.
+          required: true
+        - label: Test ve kullanıcıya görünen metinleri Türkçe hazırlayacağım.
+          required: true
+        - label: Telifli oyun varlıklarını veya dağıtım dosyalarını repoya eklemeyeceğim.
+          required: true
+        - label: Çevrimdışı ve tek oyunculu modlama kapsamına uyacağım.
+          required: true
