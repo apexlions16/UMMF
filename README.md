@@ -4,11 +4,20 @@
 
 Projenin odaklandığı üç medya alanı:
 
-- dokular ve görsel parçalar
+- dokular, sprite'lar ve görsel parçalar
 - ses klipleri ve altyazı tetiklemeli seslendirme
 - altyazılar ve yerelleştirme metinleri
 
 UMMF tek bir Unity veya BepInEx sürümüne bağlı değildir. Ortak çekirdek; eski ve yeni Unity Mono oyunları, farklı BepInEx nesilleri ve Unity IL2CPP oyunları için ayrı çalışma zamanı hostları üzerinden kullanılacaktır.
+
+## Hızlı bağlantılar
+
+- [Latest Release ve Windows EXE](https://github.com/apexlions16/UMMF/releases/latest)
+- [Alfabetik oyun uyumluluk listesi](UYUMLULUK.md)
+- [Katkı rehberi](CONTRIBUTING.md)
+- [Oyun profili standardı](oyun-profilleri/README.md)
+- [GitHub katkı ve uyumluluk formları](https://github.com/apexlions16/UMMF/issues/new/choose)
+- [Açık geliştirme görevleri](https://github.com/apexlions16/UMMF/issues)
 
 ## Güncel durum
 
@@ -104,6 +113,105 @@ Plugin ayrıca şu dosyayı üretir:
 
 `BepInEx/UMMF/raporlar/uyumluluk-raporu.json`
 
+## Topluluk katkısı
+
+Unity oyunlarının sürüm, arka uç, yükleyici ve medya sistemi çeşitliliği çok yüksektir. Bu nedenle UMMF, topluluk katkısıyla çok daha hızlı gelişebilir.
+
+Katkıda bulunmak için yazılımcı olmanız zorunlu değildir:
+
+### Testçi olarak
+
+- bir oyunu `oyun-tara` ile analiz edebilir,
+- UMMF kurulumunu deneyebilir,
+- hangi doku, ses ve altyazı özelliklerinin çalıştığını bildirebilir,
+- kişisel bilgiler temizlenmiş UMMF/BepInEx loglarını paylaşabilir,
+- oyunun alfabetik uyumluluk listesine eklenmesini sağlayabilirsiniz.
+
+GitHub'da **Oyun uyumluluğu bildir** formunu kullanın:
+
+https://github.com/apexlions16/UMMF/issues/new/choose
+
+### Oyun profili hazırlayarak
+
+Her oyun için aşağıdaki gibi küçük bir profil klasörü gönderilebilir:
+
+```text
+oyun-profilleri/
+└── oyun-kimligi/
+    ├── profil.json
+    ├── README.md
+    ├── testler/
+    └── uyarlayicilar/
+```
+
+Oyun profili; oyun sürümünü, Unity sürümünü, Mono/IL2CPP bilgisini, mimariyi, BepInEx sürümünü ve doku/ses/altyazı destek durumlarını içerir.
+
+Şablon: [`oyun-profilleri/_sablon/profil.json`](oyun-profilleri/_sablon/profil.json)
+
+### Yazılımcı olarak
+
+Aşağıdaki alanlardan biri geliştirilebilir:
+
+- eski BepInEx, BepInEx 5, BepInEx 6 Mono veya BepInEx 6 IL2CPP hostları
+- doku keşfi, dışarı aktarma ve değiştirme
+- ses keşfi, dışarı aktarma ve değiştirme
+- Unity UI ve TextMeshPro altyazıları
+- Unity Localization anahtarları
+- altyazı değiştirme
+- altyazı kimliğine WAV/OGG ses bağlama
+- Addressables, FMOD ve Wwise uyarlayıcıları
+- oyunlara özgü, açık kaynaklı uyumluluk profilleri
+
+Geliştirmeye başlamadan önce GitHub'daki **Medya uyarlayıcısı geliştirme** formundan hedef ortamı ve medya alanlarını seçin. Bu formda doku, ses, altyazı, seslendirme, Addressables, FMOD ve Wwise ayrı ayrı işaretlenebilir.
+
+Katkı akışı:
+
+1. Repoyu fork edin.
+2. Katkı dalınızı oluşturun.
+3. Kod, test, oyun profili ve Türkçe belgeyi ekleyin.
+4. Pull request açın.
+5. İnceleme ve otomatik testler sonrasında katkı ana repodaki `main` dalına birleştirilir.
+
+Ayrıntılı kurallar: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Oyun uyumluluk listesi
+
+[`UYUMLULUK.md`](UYUMLULUK.md), oyunları alfabetik sırayla gösterir ve her oyun için şu alanları ayrı ayrı izler:
+
+- test edilen oyun sürümü
+- Unity sürümü
+- Mono veya IL2CPP
+- mimari
+- BepInEx sürümü ve seçilen host
+- doku desteği
+- ses desteği
+- altyazı desteği
+- altyazı tetiklemeli seslendirme
+- son test tarihi
+- doğrulama issue veya PR bağlantısı
+
+Uyumluluk verisinin tek kaynağı `uyumluluk/oyunlar.json` dosyasıdır. GitHub Actions:
+
+- oyunları alfabetik sırada tutar,
+- yinelenen oyun kimliklerini engeller,
+- geçersiz destek durumlarını reddeder,
+- `UYUMLULUK.md` tablosunun veriyle aynı olduğunu doğrular,
+- oyun profili JSON dosyalarının zorunlu alanlarını denetler.
+
+## Katkı güvenliği
+
+Projeye şunları göndermeyin:
+
+- oyun EXE veya DLL dosyaları
+- Unity asset bundle'ları
+- telifli dokular, sesler, videolar veya altyazılar
+- oyun kayıtları veya kullanıcı profilleri
+- kapalı lisanslı SDK dosyaları
+- hile korumasını atlatan kod
+- çok oyunculu oyunu manipüle eden özellikler
+
+Bunların yerine UMMF raporları, metadata, hash değerleri, test sonuçları ve kendi yazdığınız açık kaynak kodu gönderin.
+
 ## Release doğrulaması
 
 Windows yayın iş akışı şu denetimler tamamlanmadan Release oluşturmaz:
@@ -118,7 +226,7 @@ Windows yayın iş akışı şu denetimler tamamlanmadan Release oluşturmaz:
 
 ## Yol haritası
 
-1. BepInEx 5 Mono hostunu gerçek oyunlarda doğrulamak.
+1. BepInEx 5 Mono hostunu gerçek oyunlarda doğrulamak ve uyumluluk listesini büyütmek.
 2. İlk `Texture2D` kataloğunu ve PNG dışarı aktarmayı eklemek.
 3. PNG ile doku değiştirmeyi eklemek.
 4. TextMeshPro ve Unity UI altyazı yakalamayı eklemek.
@@ -134,6 +242,9 @@ UMMF, yasal çevrimdışı ve tek oyunculu modlama için tasarlanmıştır. Hile
 
 ## Belgeler
 
+- [Katkı rehberi](CONTRIBUTING.md)
+- [Oyun uyumluluk listesi](UYUMLULUK.md)
+- [Oyun profili standardı](oyun-profilleri/README.md)
 - [BepInEx 5 Mono kurulum ve test](belgeler/bepinex5-mono-kurulum.md)
 - [Mimari](belgeler/mimari.md)
 - [Uyumluluk hedefleri](belgeler/uyumluluk-hedefleri.md)
