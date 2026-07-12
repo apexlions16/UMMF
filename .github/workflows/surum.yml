@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   derle-test-et-yayinla:
-    name: Windows EXE, plugin ve kurulum akışını doğrula
+    name: Windows arayüzünü, pluginleri ve kurulum akışını doğrula
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
       - name: Depoyu al
@@ -69,7 +69,7 @@ jobs:
       - name: Bağımlılıkları geri yükle
         run: dotnet restore UMMF.sln
 
-      - name: Çözümü ve iki plugin hedefini derle
+      - name: Çözümü, masaüstü arayüzünü ve plugin hedeflerini derle
         shell: pwsh
         run: |
           dotnet build UMMF.sln --configuration Release --no-restore 2>&1 | Tee-Object -FilePath derleme.log
@@ -79,11 +79,12 @@ jobs:
 
           $net35 = "src/UMMF.BepInEx5.Mono/bin/Release/net35/UMMF.BepInEx5.Mono.dll"
           $netstandard = "src/UMMF.BepInEx5.Mono/bin/Release/netstandard2.0/UMMF.BepInEx5.Mono.dll"
-          if (-not (Test-Path $net35)) {
-            throw "net35 BepInEx 5 plugin çıktısı bulunamadı."
-          }
-          if (-not (Test-Path $netstandard)) {
-            throw "netstandard2.0 BepInEx 5 plugin çıktısı bulunamadı."
+          $cli = "src/UMMF.KomutSatiri/bin/Release/net8.0/ummf.exe"
+          $gui = "src/UMMF.Masaustu/bin/Release/net8.0-windows/UMMF.dll"
+          foreach ($dosya in @($net35, $netstandard, $cli, $gui)) {
+            if (-not (Test-Path $dosya)) {
+              throw "Beklenen derleme çıktısı bulunamadı: $dosya"
+            }
           }
 
       - name: Birim testlerini çalıştır
@@ -94,13 +95,13 @@ jobs:
             throw "Testler başarısız oldu."
           }
 
-      - name: Tek dosyalı Windows EXE üret
+      - name: Tek dosyalı Windows masaüstü EXE üret
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
           New-Item -ItemType Directory -Path artifacts/paket -Force | Out-Null
-          dotnet publish src/UMMF.KomutSatiri/UMMF.KomutSatiri.csproj `
+          dotnet publish src/UMMF.Masaustu/UMMF.Masaustu.csproj `
             --configuration Release `
             --runtime win-x64 `
             --self-contained true `
@@ -113,12 +114,12 @@ jobs:
             -p:DebugSymbols=false `
             --output artifacts/paket 2>&1 | Tee-Object -FilePath yayin.log
           if ($LASTEXITCODE -ne 0) {
-            throw "Windows EXE üretilemedi."
+            throw "Windows masaüstü EXE üretilemedi."
           }
 
-          $kaynak = "artifacts/paket/ummf.exe"
+          $kaynak = "artifacts/paket/UMMF.exe"
           if (-not (Test-Path $kaynak)) {
-            throw "Yayın çıktısında ummf.exe bulunamadı."
+            throw "Yayın çıktısında UMMF.exe bulunamadı."
           }
 
           $hedef = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
@@ -129,33 +130,41 @@ jobs:
             Out-String |
             Set-Content artifacts/YAYIN-DOSYALARI.txt -Encoding utf8
 
-      - name: EXE açılış testini çalıştır
+      - name: Masaüstü arayüz duman testini çalıştır
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
           $exe = Resolve-Path "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
-          $cikti = & $exe bilgi 2>&1
-          $cikisKodu = $LASTEXITCODE
-          $cikti | Tee-Object -FilePath artifacts/CALISTIRMA-TESTI.txt
-
-          if ($cikisKodu -ne 0) {
-            throw "EXE açılış testi $cikisKodu çıkış koduyla başarısız oldu."
+          $sonuc = Resolve-Path artifacts
+          $rapor = Join-Path $sonuc "ARAYUZ-TESTI.txt"
+          & $exe --arayuz-testi $rapor
+          if ($LASTEXITCODE -ne 0) {
+            throw "Masaüstü arayüz duman testi başarısız oldu."
           }
-
-          $metin = $cikti -join "`n"
-          if ($metin -notmatch [regex]::Escape($env:SURUM)) {
-            throw "EXE doğru sürüm bilgisini üretmedi."
+          if (-not (Test-Path $rapor)) {
+            throw "Arayüz test raporu oluşturulmadı."
           }
+          $metin = Get-Content $rapor -Raw
+          foreach ($beklenen in @($env:SURUM, 'BAŞARILI', 'Ana Sayfa', 'Oyun ve Kurulum', 'Uyumluluk', 'Topluluk Katkısı', 'Günlük')) {
+            if ($metin -notmatch [regex]::Escape($beklenen)) {
+              throw "Arayüz testinde beklenen metin bulunamadı: $beklenen"
+            }
+          }
+          Get-Content $rapor
 
       - name: Gömülü net35 ve netstandard plugin kurulumlarını test et
         shell: pwsh
         env:
           SURUM: ${{ steps.surum.outputs.deger }}
         run: |
+          $cli = Resolve-Path "src/UMMF.KomutSatiri/bin/Release/net8.0/ummf.exe"
           & ./.github/scripts/bepinex5-kurulum-testi.ps1 `
-            -ExeYolu "artifacts/UMMF-v$env:SURUM-windows-x64.exe" `
+            -ExeYolu $cli `
             -Surum $env:SURUM
+          if ($LASTEXITCODE -ne 0) {
+            throw "BepInEx 5 kurulum testi başarısız oldu."
+          }
 
       - name: SHA-256 özeti oluştur
         shell: pwsh
@@ -177,7 +186,7 @@ jobs:
           $notDosyasi = "belgeler/surum-notlari/$env:SURUM.md"
           if (-not (Test-Path $notDosyasi)) {
             $notDosyasi = "$env:RUNNER_TEMP/surum-notlari.md"
-            "# UMMF $env:SURUM`n`nOtomatik oluşturulan sürüm." | Set-Content $notDosyasi -Encoding utf8
+            "# UMMF $env:SURUM`n`nOtomatik oluşturulan masaüstü arayüz sürümü." | Set-Content $notDosyasi -Encoding utf8
           }
 
           $exe = "artifacts/UMMF-v$env:SURUM-windows-x64.exe"
@@ -204,7 +213,7 @@ jobs:
             throw "Mevcut GitHub Release, Latest olarak işaretlenemedi."
           }
 
-      - name: Release ve doğrudan EXE varlığını doğrula
+      - name: Release ve doğrudan GUI EXE varlığını doğrula
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -221,7 +230,7 @@ jobs:
           $beklenenExe = "UMMF-v$env:SURUM-windows-x64.exe"
           $varlikAdlari = @($surumBilgisi.assets | ForEach-Object { $_.name })
           if ($varlikAdlari -notcontains $beklenenExe) {
-            throw "Release içinde doğrudan EXE bulunamadı: $beklenenExe"
+            throw "Release içinde doğrudan GUI EXE bulunamadı: $beklenenExe"
           }
           if ($surumBilgisi.isPrerelease) {
             throw "Release yanlışlıkla ön sürüm olarak işaretlenmiş."
@@ -231,14 +240,11 @@ jobs:
           }
 
           $latestEtiket = gh api "repos/$env:DEPO/releases/latest" --jq '.tag_name'
-          if ($LASTEXITCODE -ne 0) {
-            throw "GitHub Latest Release kaydı okunamadı."
-          }
-          if ($latestEtiket.Trim() -ne $env:ETIKET) {
-            throw "Release, GitHub Latest kaydı olarak görünmüyor. Beklenen: $env:ETIKET; bulunan: $latestEtiket"
+          if ($LASTEXITCODE -ne 0 -or $latestEtiket.Trim() -ne $env:ETIKET) {
+            throw "Release, GitHub Latest kaydı olarak görünmüyor."
           }
 
-          gh issue comment 14 --body "$env:ETIKET; Windows EXE açılış testi, net35/netstandard2.0 gömülü plugin kurulumu, durum, rapor ve kaldırma testlerinden geçti. Normal Latest Release olarak doğrulandı."
+          gh issue comment 26 --body "$env:ETIKET; Windows masaüstü arayüz duman testi, çözüm testleri ve BepInEx 5 kurulum testlerinden geçti. Doğrudan GUI EXE içeren normal Latest Release olarak doğrulandı."
 
           gh issue list `
             --state open `
@@ -248,7 +254,7 @@ jobs:
               if (-not [string]::IsNullOrWhiteSpace($_)) {
                 gh issue close $_ `
                   --reason completed `
-                  --comment "$env:ETIKET tam GitHub Release, Latest ve doğrulanmış EXE ile başarıyla yayımlandı." *> $null
+                  --comment "$env:ETIKET GUI Release, Latest ve doğrulanmış EXE ile başarıyla yayımlandı." *> $null
               }
             }
 
@@ -264,16 +270,16 @@ jobs:
           $baslik = "Sürüm $surumAdi oluşturulamadı (çalışma ${{ github.run_id }})"
           $geciciDosya = "$env:RUNNER_TEMP/sorun.md"
           $satirlar = @(
-            'Otomatik Windows EXE ve BepInEx plugin iş akışı başarısız oldu.',
+            'Otomatik Windows masaüstü arayüz ve BepInEx plugin iş akışı başarısız oldu.',
             '',
             "Çalışma: $env:CALISMA_ADRESI"
           )
 
-          foreach ($dosya in @('derleme.log', 'yayin.log', 'surum.log', 'artifacts/YAYIN-DOSYALARI.txt', 'artifacts/CALISTIRMA-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
+          foreach ($dosya in @('derleme.log', 'yayin.log', 'surum.log', 'artifacts/YAYIN-DOSYALARI.txt', 'artifacts/ARAYUZ-TESTI.txt', 'artifacts/KURULUM-TESTI.txt')) {
             if (Test-Path $dosya) {
               $satirlar += ''
               $satirlar += '```text'
-              $satirlar += Get-Content $dosya | Select-Object -Last 100
+              $satirlar += Get-Content $dosya | Select-Object -Last 120
               $satirlar += '```'
             }
           }
