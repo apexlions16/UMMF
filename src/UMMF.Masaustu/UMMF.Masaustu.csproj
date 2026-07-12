@@ -8,7 +8,7 @@
     <RootNamespace>UMMF.Masaustu</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8604</WarningsNotAsErrors>
+    <NoWarn>$(NoWarn);CS8604</NoWarn>
     <PublishTrimmed>false</PublishTrimmed>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
