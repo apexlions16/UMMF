@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <AssemblyName>UMMF</AssemblyName>
+    <RootNamespace>UMMF.Masaustu</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PublishTrimmed>false</PublishTrimmed>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UMMF.KomutSatiri\UMMF.KomutSatiri.csproj" />
+    <ProjectReference Include="..\UMMF.Cekirdek\UMMF.Cekirdek.csproj" />
+    <ProjectReference Include="..\UMMF.Sozlesmeler\UMMF.Sozlesmeler.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\uyumluluk\oyunlar.json"
+                      LogicalName="UMMF.Kaynaklar.uyumluluk.oyunlar.json" />
+  </ItemGroup>
+</Project>
