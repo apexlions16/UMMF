@@ -1,0 +1,156 @@
+name: Oyun uyumluluğu bildir
+description: Bir Unity oyununun UMMF, Unity ve BepInEx uyumluluk bilgilerini gönderin.
+title: "[Oyun uyumluluğu]: "
+labels:
+  - uyumluluk
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu form, doğrulanmış oyunları alfabetik uyumluluk listesine eklemek için kullanılır.
+
+        **Telif hakkıyla korunan oyun dosyalarını, oyun varlıklarını veya dağıtım paketlerini yüklemeyin.** Yalnızca UMMF raporlarını, logların ilgili bölümlerini ve kendi yazdığınız kodu paylaşın.
+
+  - type: input
+    id: oyun-adi
+    attributes:
+      label: Oyun adı
+      description: Oyunun mağazada veya çalıştırılabilir dosyada görünen tam adı.
+      placeholder: Örnek Oyun
+    validations:
+      required: true
+
+  - type: input
+    id: oyun-surumu
+    attributes:
+      label: Test edilen oyun sürümü
+      placeholder: 1.2.3 veya bilinmiyor
+    validations:
+      required: true
+
+  - type: input
+    id: unity-surumu
+    attributes:
+      label: Unity sürümü
+      description: UMMF `oyun-tara` çıktısındaki Unity sürümü.
+      placeholder: 2019.4.40f1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: betik-arka-ucu
+    attributes:
+      label: Unity betik arka ucu
+      options:
+        - Mono
+        - IL2CPP
+        - Bilinmiyor
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mimari
+    attributes:
+      label: İşlemci mimarisi
+      options:
+        - x86
+        - x64
+        - ARM32
+        - ARM64
+        - Bilinmiyor
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bepinex-surumu
+    attributes:
+      label: BepInEx sürümü veya nesli
+      options:
+        - BepInEx 4 veya daha eski
+        - BepInEx 5
+        - BepInEx 6 Mono
+        - BepInEx 6 IL2CPP
+        - BepInEx kurulu değil
+        - Başka bir yükleyici
+        - Bilinmiyor
+    validations:
+      required: true
+
+  - type: input
+    id: tam-bepinex-surumu
+    attributes:
+      label: Tam BepInEx sürümü
+      description: Biliniyorsa tam sürümü yazın.
+      placeholder: 5.4.23.2
+
+  - type: checkboxes
+    id: medya-alanlari
+    attributes:
+      label: Denenen medya alanları
+      description: Gerçekten test ettiğiniz alanları seçin.
+      options:
+        - label: Doku / Texture2D / Sprite keşfi
+        - label: Doku dışarı aktarma
+        - label: Doku değiştirme
+        - label: Ses / AudioClip keşfi
+        - label: Ses dışarı aktarma
+        - label: Ses değiştirme
+        - label: Unity UI altyazı yakalama
+        - label: TextMeshPro altyazı yakalama
+        - label: Altyazı değiştirme
+        - label: Altyazı kimliğine ses bağlama
+        - label: Addressables
+        - label: FMOD
+        - label: Wwise
+
+  - type: dropdown
+    id: genel-sonuc
+    attributes:
+      label: Genel sonuç
+      options:
+        - Çalışıyor
+        - Kısmen çalışıyor
+        - Kuruluyor ancak oyun içi test bekliyor
+        - Çalışmıyor
+        - Çöküyor
+        - Bilinmiyor
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-adimlari
+    attributes:
+      label: Uygulanan test adımları
+      description: Kullandığınız UMMF komutlarını ve oyun içinde ne yaptığınızı yazın.
+      placeholder: |
+        1. oyun-tara çalıştırıldı
+        2. kur komutu çalıştırıldı
+        3. oyun ana menüye kadar açıldı
+        4. LogOutput.log kontrol edildi
+    validations:
+      required: true
+
+  - type: textarea
+    id: raporlar
+    attributes:
+      label: İlgili rapor ve log bölümleri
+      description: Kişisel bilgileri temizleyerek yalnızca ilgili UMMF/BepInEx satırlarını yapıştırın.
+      render: text
+
+  - type: input
+    id: profil-klasoru
+    attributes:
+      label: Hazırlanan oyun profili veya PR bağlantısı
+      description: Varsa `oyun-profilleri/<oyun-kimligi>` klasörünü ekleyen PR bağlantısı.
+
+  - type: checkboxes
+    id: onaylar
+    attributes:
+      label: Gönderim onayları
+      options:
+        - label: Paylaştığım bilgilerin kendi testimden geldiğini onaylıyorum.
+          required: true
+        - label: Telif hakkıyla korunan oyun dosyaları veya varlıkları yüklemedim.
+          required: true
+        - label: Test çevrimdışı veya tek oyunculu kullanım kapsamında yapıldı.
+          required: true
