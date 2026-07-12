@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\UMMF.Cekirdek\UMMF.Cekirdek.csproj" />
     <ProjectReference Include="..\..\src\UMMF.Sozlesmeler\UMMF.Sozlesmeler.csproj" />
+    <ProjectReference Include="..\..\src\UMMF.KomutSatiri\UMMF.KomutSatiri.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,12 +14,32 @@ internal sealed class BepInEx5KurulumYoneticisi
 
     public KurulumIslemSonucu Kur(string oyunDizini)
     {
+        BadParentingSesIslemSonucu? badParentingKurulumu = null;
         try
         {
             var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+            var badParentingYoneticisi = new BadParentingSesKurulumYoneticisi();
+            var badParentingPlani = badParentingYoneticisi.Planla(ortam);
+            if (badParentingPlani.Uygulanabilir)
+            {
+                badParentingKurulumu = badParentingYoneticisi.Kur(ortam);
+                if (!badParentingKurulumu.Basarili)
+                {
+                    return KurulumIslemSonucu.BasarisizlikOlustur(badParentingKurulumu.Aciklama);
+                }
+
+                ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+                BadParentingYukleyicisiniDogrula(ortam);
+            }
+
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
+                if (badParentingKurulumu?.Basarili == true)
+                {
+                    badParentingYoneticisi.Kaldir(ortam);
+                }
+
                 return KurulumIslemSonucu.BasarisizlikOlustur(plan.Aciklama);
             }
 
@@ -35,7 +55,9 @@ internal sealed class BepInEx5KurulumYoneticisi
             KurulumBilgisiniYaz(plan, ortam);
 
             return KurulumIslemSonucu.BasariOlustur(
-                "UMMF BepInEx 5 Mono eklentisi başarıyla kuruldu.",
+                badParentingKurulumu?.Basarili == true
+                    ? "UMMF BepInEx 5 Mono eklentisi ve Bad Parenting ses modu başarıyla kuruldu. " + badParentingKurulumu.Aciklama
+                    : "UMMF BepInEx 5 Mono eklentisi başarıyla kuruldu.",
                 plan,
                 DosyaOzetiniHesapla(plan.EklentiDosyasi));
         }
@@ -45,7 +67,36 @@ internal sealed class BepInEx5KurulumYoneticisi
                                      hata is DirectoryNotFoundException ||
                                      hata is InvalidOperationException)
         {
+            if (badParentingKurulumu?.Basarili == true)
+            {
+                try
+                {
+                    var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+                    new BadParentingSesKurulumYoneticisi().Kaldir(ortam);
+                }
+                catch
+                {
+                    // Asıl kurulum hatası korunur; durum kaydı güvenli kaldırmaya izin verir.
+                }
+            }
+
             return KurulumIslemSonucu.BasarisizlikOlustur("Kurulum tamamlanamadı: " + hata.Message);
+        }
+    }
+
+    public KurulumIslemSonucu SesPlanla(string oyunDizini)
+    {
+        try
+        {
+            var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+            var sonuc = new BadParentingSesKurulumYoneticisi().Planla(ortam);
+            return sonuc.Basarili
+                ? KurulumIslemSonucu.BasariOlustur(sonuc.Aciklama, BosPlanOlustur(ortam))
+                : KurulumIslemSonucu.BasarisizlikOlustur(sonuc.Aciklama);
+        }
+        catch (Exception hata) when (hata is IOException || hata is UnauthorizedAccessException || hata is ArgumentException || hata is DirectoryNotFoundException)
+        {
+            return KurulumIslemSonucu.BasarisizlikOlustur("Ses planı oluşturulamadı: " + hata.Message);
         }
     }
 
@@ -54,6 +105,7 @@ internal sealed class BepInEx5KurulumYoneticisi
         try
         {
             var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+            BadParentingYukleyicisiniDogrula(ortam);
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
@@ -65,8 +117,16 @@ internal sealed class BepInEx5KurulumYoneticisi
                 return KurulumIslemSonucu.BasarisizlikOlustur("UMMF eklentisi kurulu değil.", plan);
             }
 
+            var badParenting = new BadParentingSesKurulumYoneticisi().Durum(ortam);
+            if (badParenting.Uygulanabilir && !badParenting.Basarili)
+            {
+                return KurulumIslemSonucu.BasarisizlikOlustur(badParenting.Aciklama, plan);
+            }
+
             return KurulumIslemSonucu.BasariOlustur(
-                "UMMF eklentisi kurulu ve dosya erişilebilir.",
+                badParenting.Uygulanabilir
+                    ? "UMMF eklentisi kurulu. " + badParenting.Aciklama
+                    : "UMMF eklentisi kurulu ve dosya erişilebilir.",
                 plan,
                 DosyaOzetiniHesapla(plan.EklentiDosyasi));
         }
@@ -84,6 +144,7 @@ internal sealed class BepInEx5KurulumYoneticisi
         try
         {
             var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+            BadParentingYukleyicisiniDogrula(ortam);
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
@@ -110,6 +171,7 @@ internal sealed class BepInEx5KurulumYoneticisi
                     ? DosyaOzetiniHesapla(plan.EklentiDosyasi)
                     : null,
                 modDizini = plan.ModDizini,
+                badParentingSesModu = new BadParentingSesKurulumYoneticisi().RaporBilgisi(ortam),
                 oyunDosyalariDegistirildi = false
             };
 
@@ -134,6 +196,7 @@ internal sealed class BepInEx5KurulumYoneticisi
         try
         {
             var ortam = new OyunOrtamiAlgilayici().Tara(oyunDizini);
+            BadParentingYukleyicisiniDogrula(ortam);
             var plan = BepInEx5KurulumPlanlayici.Olustur(ortam);
             if (!plan.Uygun)
             {
@@ -153,8 +216,16 @@ internal sealed class BepInEx5KurulumYoneticisi
 
             DizinBossaSil(plan.EklentiDizini);
 
+            var badParenting = new BadParentingSesKurulumYoneticisi().Kaldir(ortam);
+            if (badParenting.Uygulanabilir && !badParenting.Basarili)
+            {
+                return KurulumIslemSonucu.BasarisizlikOlustur(badParenting.Aciklama, plan);
+            }
+
             return KurulumIslemSonucu.BasariOlustur(
-                "UMMF plugin DLL'si kaldırıldı. Kullanıcı modları ve raporlar korunmuştur.",
+                badParenting.Uygulanabilir
+                    ? "UMMF plugin DLL'si ve Bad Parenting ses modu kaldırıldı. " + badParenting.Aciklama
+                    : "UMMF plugin DLL'si kaldırıldı. Kullanıcı modları ve raporlar korunmuştur.",
                 plan);
         }
         catch (Exception hata) when (hata is IOException ||
@@ -226,6 +297,42 @@ internal sealed class BepInEx5KurulumYoneticisi
         if (Directory.Exists(dizin) && !Directory.EnumerateFileSystemEntries(dizin).Any())
         {
             Directory.Delete(dizin);
+        }
+    }
+
+    private static BepInEx5KurulumPlani BosPlanOlustur(UMMF.Sozlesmeler.OyunOrtami ortam)
+    {
+        var bepinex = Path.Combine(ortam.OyunDizini, "BepInEx");
+        return new BepInEx5KurulumPlani
+        {
+            Uygun = true,
+            Aciklama = "Dry-run ses planı",
+            EklentiDizini = Path.Combine(bepinex, "plugins", "UMMF"),
+            EklentiDosyasi = Path.Combine(bepinex, "plugins", "UMMF", BepInEx5KurulumPlanlayici.EklentiDosyaAdi),
+            UMMFKokDizini = Path.Combine(bepinex, "UMMF"),
+            ModDizini = Path.Combine(bepinex, "UMMF", "modlar"),
+            RaporDizini = Path.Combine(bepinex, "UMMF", "raporlar")
+        };
+    }
+
+    private static void BadParentingYukleyicisiniDogrula(UMMF.Sozlesmeler.OyunOrtami ortam)
+    {
+        if (ortam.Yukleyici.AnaSurum.HasValue || !BadParentingProfili.Tani(ortam).Eslesiyor)
+        {
+            return;
+        }
+
+        var bepinex = Path.Combine(ortam.OyunDizini, "BepInEx");
+        var durum = Path.Combine(bepinex, "UMMF", "bad-parenting-kurulum.json");
+        if (File.Exists(durum) && File.Exists(Path.Combine(bepinex, "core", "BepInEx.dll")))
+        {
+            ortam.Yukleyici = new UMMF.Sozlesmeler.YukleyiciBilgisi
+            {
+                Tur = UMMF.Sozlesmeler.YukleyiciTuru.BepInEx,
+                AnaSurum = 5,
+                Surum = "5.4.23.5 (Bad Parenting adapter kaydı)",
+                KokDizin = bepinex
+            };
         }
     }
 }

@@ -1,5 +1,15 @@
 # Değişiklik Günlüğü
 
+## 0.5.0-onizleme.1
+
+- Bad Parenting 1: Mr. Red Face için EXE, Data, ürün metadata’sı, Unity Mono x86 ve bilinen dosya özetlerine dayalı oyun profili eklendi.
+- `MOD` kaynağındaki BepInEx 5 x86 altyapısını ve satır indeksli sesleri kuran adapter eklendi.
+- 214 satırlık CSV eşlemesi ile WAV/OGG/MP3 dosya başlığı, yinelenen indeks ve eksik ses doğrulaması eklendi.
+- `Dialogue.StartDialogue` akışı Harmony ile bağlanarak Türkçe dilinde satır başına tek Unity `AudioSource` oynatımı eklendi.
+- `ses-planla` dry-run komutu; kurulum, durum, rapor, tekrar kurulum ve güvenli kaldırma desteği eklendi.
+- Çakışan oyun/yükleyici dosyaları için SHA-256 izleme, otomatik yedek ve koşullu geri yükleme eklendi.
+- Bad Parenting algılama, plan, eşleme, idempotent kurulum ve kaldırma testleri eklendi.
+
 ## Ana dal — topluluk katkı ve uyumluluk altyapısı
 
 - README, topluluk desteği ve katkı yollarını görünür biçimde açıklayacak şekilde genişletildi.
