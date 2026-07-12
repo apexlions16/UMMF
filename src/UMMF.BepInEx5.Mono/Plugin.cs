@@ -15,7 +15,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string EklentiKimligi = "tr.ummf.bepinex5.mono";
     public const string EklentiAdi = "UMMF BepInEx 5 Mono Hostu";
-    public const string EklentiSurumu = "0.5.0-onizleme.1";
+    public const string EklentiSurumu = "0.6.0-onizleme.1";
 
 #if NET35
     private const string HedefCerceve = "net35";
