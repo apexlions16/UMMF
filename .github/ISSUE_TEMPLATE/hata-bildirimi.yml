@@ -1,0 +1,101 @@
+name: UMMF hata bildirimi
+description: Kurulum, tarama, host veya medya işlevindeki tekrarlanabilir bir sorunu bildirin.
+title: "[Hata]: "
+labels:
+  - hata
+body:
+  - type: input
+    id: ummf-surumu
+    attributes:
+      label: UMMF sürümü
+      placeholder: 0.4.0-onizleme.1
+    validations:
+      required: true
+
+  - type: input
+    id: oyun
+    attributes:
+      label: Oyun ve sürümü
+      placeholder: Örnek Oyun 1.2.3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arka-uc
+    attributes:
+      label: Arka uç
+      options:
+        - Mono
+        - IL2CPP
+        - Bilinmiyor
+    validations:
+      required: true
+
+  - type: input
+    id: bepinex
+    attributes:
+      label: BepInEx sürümü
+      placeholder: 5.4.23.2
+
+  - type: dropdown
+    id: alan
+    attributes:
+      label: Sorunun alanı
+      options:
+        - EXE açılışı
+        - Oyun tarama
+        - Kurulum
+        - Kaldırma
+        - BepInEx hostu
+        - Doku
+        - Ses
+        - Altyazı
+        - Altyazı seslendirme
+        - Addressables
+        - FMOD
+        - Wwise
+        - Uyumluluk listesi veya oyun profili
+    validations:
+      required: true
+
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Tekrarlama adımları
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: beklenen
+    attributes:
+      label: Beklenen sonuç
+    validations:
+      required: true
+
+  - type: textarea
+    id: gerceklesen
+    attributes:
+      label: Gerçekleşen sonuç
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: İlgili UMMF/BepInEx log satırları
+      description: Kişisel yolları temizleyin ve yalnızca ilgili bölümü ekleyin.
+      render: text
+
+  - type: checkboxes
+    id: onay
+    attributes:
+      label: Onay
+      options:
+        - label: Telifli oyun dosyası veya varlığı yüklemedim.
+          required: true
+        - label: Kişisel bilgileri loglardan temizledim.
+          required: true
