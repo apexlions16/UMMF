@@ -6,7 +6,7 @@ using UMMF.Cekirdek;
 
 namespace UMMF.KomutSatiri;
 
-internal sealed class BepInEx5KurulumYoneticisi
+public sealed class BepInEx5KurulumYoneticisi
 {
     private const string Net35KaynakAdi = "UMMF.Kaynaklar.BepInEx5.Mono.net35.dll";
     private const string NetStandardKaynakAdi = "UMMF.Kaynaklar.BepInEx5.Mono.netstandard2.0.dll";
@@ -337,7 +337,7 @@ internal sealed class BepInEx5KurulumYoneticisi
     }
 }
 
-internal sealed class KurulumIslemSonucu
+public sealed class KurulumIslemSonucu
 {
     private KurulumIslemSonucu(bool basarili, string aciklama, BepInEx5KurulumPlani? plan, string? sha256)
     {
